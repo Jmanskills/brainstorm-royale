@@ -855,6 +855,138 @@
     .mt-20 {
       margin-top: 20px;
     }
+    /* ========== SHOP STYLES ========== */
+    .shop-tab {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      color: #666;
+      transition: all 0.3s;
+    }
+
+    .shop-tab:hover {
+      color: #667eea;
+    }
+
+    .shop-tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+      font-weight: bold;
+    }
+
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 20px 0;
+    }
+
+    .shop-item {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .shop-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      border-color: #667eea;
+    }
+
+    .shop-item.owned {
+      border-color: #2ecc71;
+      background: #f0fff4;
+    }
+
+    .shop-item-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .shop-item-name {
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .shop-item-rarity {
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .rarity-common { background: #95a5a6; color: white; }
+    .rarity-uncommon { background: #27ae60; color: white; }
+    .rarity-rare { background: #3498db; color: white; }
+    .rarity-epic { background: #9b59b6; color: white; }
+    .rarity-legendary { background: #f39c12; color: white; }
+
+    .shop-item-price {
+      font-size: 20px;
+      font-weight: bold;
+      color: #f39c12;
+      margin-bottom: 10px;
+    }
+
+    .shop-buy-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    .shop-buy-btn:hover {
+      background: #764ba2;
+    }
+
+    .shop-buy-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .shop-owned-badge {
+      background: #2ecc71;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    .bundle-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+
+    .bundle-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .bundle-item-icon {
+      font-size: 32px;
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -918,6 +1050,7 @@
       </div>
       <div class="top-bar-right">
         <div class="coins-display">💰 <span id="coins-header">0</span></div>
+        <button class="top-button" onclick="openShop()">🛍️ Shop</button>
         <button class="top-button" onclick="openBattleTicket()">🎫 Battle Ticket</button>
         <button class="top-button" onclick="logout()">Logout</button>
       </div>
@@ -1061,6 +1194,32 @@
       </div>
 
       <button class="auth-button mt-20" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+
+  <!-- ========== SHOP MODAL ========== -->
+  <div id="shop-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 900px; max-height: 90vh;">
+      <button class="modal-close" onclick="closeShop()">×</button>
+      <h2 style="margin-bottom: 20px; color: #667eea;">🛍️ Item Shop</h2>
+      
+      <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+        <span style="font-size: 24px; font-weight: bold;">💰 Your Coins: <span id="shop-coins-display">0</span></span>
+      </div>
+
+      <!-- Shop Tabs -->
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd;">
+        <button class="shop-tab active" onclick="switchShopTab('featured')" data-tab="featured">⭐ Featured</button>
+        <button class="shop-tab" onclick="switchShopTab('skins')" data-tab="skins">🎨 Skins</button>
+        <button class="shop-tab" onclick="switchShopTab('emotes')" data-tab="emotes">😊 Emotes</button>
+        <button class="shop-tab" onclick="switchShopTab('trails')" data-tab="trails">✨ Trails</button>
+        <button class="shop-tab" onclick="switchShopTab('bundles')" data-tab="bundles">📦 Bundles</button>
+      </div>
+
+      <!-- Shop Content -->
+      <div id="shop-content" style="min-height: 400px;">
+        <p style="text-align: center; color: #666;">Loading shop...</p>
+      </div>
     </div>
   </div>
 
@@ -1920,6 +2079,201 @@
           username: currentUser.username,
           skin: currentUser.inventory?.equippedSkin || 'default'
         });
+      }
+    }
+
+    // ========== SHOP FUNCTIONS ==========
+    let currentShopTab = 'featured';
+    
+    async function openShop() {
+      document.getElementById('shop-modal').classList.add('active');
+      document.getElementById('shop-coins-display').textContent = currentUser.stats.coins;
+      await loadShopItems('featured');
+    }
+    
+    function closeShop() {
+      document.getElementById('shop-modal').classList.remove('active');
+    }
+    
+    async function switchShopTab(tab) {
+      // Update active tab
+      document.querySelectorAll('.shop-tab').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+      
+      currentShopTab = tab;
+      await loadShopItems(tab);
+    }
+    
+    async function loadShopItems(category) {
+      const content = document.getElementById('shop-content');
+      content.innerHTML = '<p style="text-align: center;">Loading...</p>';
+      
+      try {
+        let items = [];
+        
+        if (category === 'featured') {
+          const res = await fetch('/api/shop/featured', {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+          });
+          const data = await res.json();
+          items = data.items || [];
+        } else if (category === 'bundles') {
+          const res = await fetch('/api/shop/bundles', {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+          });
+          const data = await res.json();
+          content.innerHTML = renderBundles(data);
+          return;
+        } else {
+          const res = await fetch('/api/shop/items', {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+          });
+          const data = await res.json();
+          items = data.filter(item => item.type === category);
+        }
+        
+        content.innerHTML = renderShopItems(items);
+      } catch (error) {
+        console.error('Load shop error:', error);
+        content.innerHTML = '<p style="text-align: center; color: red;">Error loading shop</p>';
+      }
+    }
+    
+    function renderShopItems(items) {
+      if (items.length === 0) {
+        return '<p style="text-align: center; color: #666;">No items available</p>';
+      }
+      
+      return `
+        <div class="shop-grid">
+          ${items.map(item => `
+            <div class="shop-item ${item.owned ? 'owned' : ''}">
+              <div class="shop-item-icon">${getItemIcon(item.type)}</div>
+              <div class="shop-item-name">${item.name}</div>
+              <div class="shop-item-rarity rarity-${item.rarity || 'common'}">${item.rarity || 'Common'}</div>
+              <div class="shop-item-price">💰 ${item.price}</div>
+              ${item.owned 
+                ? '<div class="shop-owned-badge">✅ Owned</div>'
+                : `<button class="shop-buy-btn" onclick="buyItem('${item.id}', '${item.type}', ${item.price})">Buy Now</button>`
+              }
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+    
+    function renderBundles(bundles) {
+      return bundles.map(bundle => `
+        <div class="bundle-card">
+          <h3 style="margin-bottom: 10px;">${bundle.name}</h3>
+          <p style="opacity: 0.9; margin-bottom: 15px;">${bundle.description || ''}</p>
+          
+          <div class="bundle-items">
+            ${bundle.items.map(item => `
+              <div class="bundle-item-icon" title="${item.name}">${getItemIcon(item.type)}</div>
+            `).join('')}
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+            <div>
+              <span style="font-size: 24px; font-weight: bold;">💰 ${bundle.price}</span>
+              ${bundle.originalPrice ? `<span style="text-decoration: line-through; opacity: 0.7; margin-left: 10px;">${bundle.originalPrice}</span>` : ''}
+              ${bundle.discount ? `<span style="background: #e74c3c; padding: 4px 8px; border-radius: 5px; margin-left: 10px; font-size: 14px;">${bundle.discount}% OFF</span>` : ''}
+            </div>
+            ${bundle.allOwned 
+              ? '<span style="background: #2ecc71; padding: 10px 20px; border-radius: 10px;">✅ All Owned</span>'
+              : `<button class="shop-buy-btn" style="padding: 15px 30px; font-size: 16px;" onclick="buyBundle('${bundle.id}', ${bundle.price})">Buy Bundle</button>`
+            }
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function getItemIcon(type) {
+      const icons = {
+        skins: '🎨',
+        emotes: '😊',
+        trails: '✨',
+        weapon_skins: '🔫'
+      };
+      return icons[type] || '🎁';
+    }
+    
+    async function buyItem(itemId, itemType, price) {
+      if (currentUser.stats.coins < price) {
+        alert('❌ Not enough coins!');
+        return;
+      }
+      
+      if (!confirm(`Buy this item for ${price} coins?`)) {
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/shop/purchase', {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ itemId, itemType })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          alert('✅ Purchase successful!');
+          currentUser.stats.coins = data.newBalance;
+          document.getElementById('shop-coins-display').textContent = data.newBalance;
+          document.getElementById('coins-header').textContent = data.newBalance;
+          document.getElementById('coins-display').textContent = data.newBalance;
+          await loadShopItems(currentShopTab);
+        } else {
+          alert('❌ ' + (data.error || 'Purchase failed'));
+        }
+      } catch (error) {
+        console.error('Purchase error:', error);
+        alert('❌ Error purchasing item');
+      }
+    }
+    
+    async function buyBundle(bundleId, price) {
+      if (currentUser.stats.coins < price) {
+        alert('❌ Not enough coins!');
+        return;
+      }
+      
+      if (!confirm(`Buy this bundle for ${price} coins?`)) {
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/shop/purchase-bundle', {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ bundleId })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          alert('✅ Bundle purchased!');
+          currentUser.stats.coins = data.newBalance;
+          document.getElementById('shop-coins-display').textContent = data.newBalance;
+          document.getElementById('coins-header').textContent = data.newBalance;
+          document.getElementById('coins-display').textContent = data.newBalance;
+          await loadShopItems('bundles');
+        } else {
+          alert('❌ ' + (data.error || 'Purchase failed'));
+        }
+      } catch (error) {
+        console.error('Bundle purchase error:', error);
+        alert('❌ Error purchasing bundle');
       }
     }
 
