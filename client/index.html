@@ -1426,6 +1426,10 @@
         }
       });
       
+      socket.on('error', (data) => {
+        alert('❌ ' + data.message);
+      });
+      
       socket.on('user-info', (data) => {
         if (!isGuest && data.username) {
           currentUser.username = data.username;
@@ -1491,6 +1495,9 @@
           </div>
           
           <div style="text-align: center;">
+            <button id="ready-toggle-btn" style="background: #95a5a6; color: white; border: none; padding: 15px 40px; font-size: 18px; border-radius: 10px; cursor: pointer; margin-right: 10px;">
+              ⏳ Ready Up
+            </button>
             <button id="start-game-btn" style="display: none; background: #2ecc71; color: white; border: none; padding: 15px 40px; font-size: 18px; border-radius: 10px; cursor: pointer; margin-right: 10px;">
               🚀 Start Game
             </button>
@@ -1498,12 +1505,23 @@
               🚪 Leave Lobby
             </button>
           </div>
+          
+          <div id="lobby-status" style="margin-top: 20px; text-align: center; color: white; font-size: 16px;">
+            <!-- Status messages will appear here -->
+          </div>
         </div>
       `;
       
       // Add event listeners
+      const readyBtn = document.getElementById('ready-toggle-btn');
       const startBtn = document.getElementById('start-game-btn');
       const leaveBtn = document.getElementById('leave-lobby-btn');
+      
+      if (readyBtn) {
+        readyBtn.addEventListener('click', () => {
+          socket.emit('toggle-ready');
+        });
+      }
       
       if (startBtn) {
         startBtn.addEventListener('click', () => {
@@ -1524,22 +1542,69 @@
       const playersList = document.getElementById('lobby-players-list');
       if (!playersList) return;
       
+      // Count ready players
+      const readyCount = players.filter(p => p.isReady).length;
+      const totalCount = players.length;
+      const allReady = readyCount === totalCount;
+      
       playersList.innerHTML = players.map(player => `
         <div style="padding: 15px; background: ${player.id === hostId ? '#ffeaa7' : '#f5f5f5'}; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
           <div>
             <strong style="font-size: 18px;">${player.username}</strong>
             ${player.id === hostId ? '<span style="color: #fdcb6e; margin-left: 10px;">👑 Host</span>' : ''}
           </div>
-          <div style="color: ${player.isReady ? '#2ecc71' : '#95a5a6'};">
+          <div style="color: ${player.isReady ? '#2ecc71' : '#95a5a6'}; font-weight: bold;">
             ${player.isReady ? '✅ Ready' : '⏳ Not Ready'}
           </div>
         </div>
       `).join('');
       
+      // Update ready button for current player
+      const currentPlayer = players.find(p => p.id === socket.id);
+      const readyBtn = document.getElementById('ready-toggle-btn');
+      if (readyBtn && currentPlayer) {
+        if (currentPlayer.isReady) {
+          readyBtn.style.background = '#2ecc71';
+          readyBtn.textContent = '✅ Ready!';
+        } else {
+          readyBtn.style.background = '#95a5a6';
+          readyBtn.textContent = '⏳ Ready Up';
+        }
+      }
+      
       // Show start button only if you're the host
       const startBtn = document.getElementById('start-game-btn');
       if (startBtn && socket.id === hostId) {
         startBtn.style.display = 'inline-block';
+        
+        // Enable/disable based on all ready
+        if (allReady) {
+          startBtn.disabled = false;
+          startBtn.style.opacity = '1';
+          startBtn.style.cursor = 'pointer';
+        } else {
+          startBtn.disabled = true;
+          startBtn.style.opacity = '0.5';
+          startBtn.style.cursor = 'not-allowed';
+        }
+      }
+      
+      // Update status message
+      const statusDiv = document.getElementById('lobby-status');
+      if (statusDiv) {
+        if (socket.id === hostId) {
+          if (allReady) {
+            statusDiv.innerHTML = '<span style="color: #2ecc71; font-weight: bold;">✅ All players ready! Click Start Game!</span>';
+          } else {
+            statusDiv.innerHTML = `<span style="color: #f39c12;">⏳ Waiting for players... (${readyCount}/${totalCount} ready)</span>`;
+          }
+        } else {
+          if (currentPlayer && currentPlayer.isReady) {
+            statusDiv.innerHTML = '<span style="color: #2ecc71;">✅ You are ready! Waiting for host to start...</span>';
+          } else {
+            statusDiv.innerHTML = '<span style="color: #f39c12;">⏳ Click "Ready Up" when you\'re ready to play!</span>';
+          }
+        }
       }
     }
 
