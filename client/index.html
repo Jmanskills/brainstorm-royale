@@ -1237,6 +1237,12 @@
           loadBattleTicket();
         }
       });
+
+      socket.on('game-created', (data) => {
+        console.log('Game created!', data);
+        currentGameCode = data.gameCode;
+        showLobbyScreen();
+      });
       
       socket.on('user-info', (data) => {
         if (!isGuest && data.username) {
