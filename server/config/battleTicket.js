@@ -92,100 +92,113 @@ const BATTLE_TICKET_CONFIG = {
 const SKINS = {
   // Default/Free skins
   default: {
-    name: 'Default',
+    name: 'BrainBot Classic',
     rarity: 'common',
     price: 0,
     colors: { primary: '#667eea', secondary: '#764ba2', accent: '#fff' }
   },
   rookie: {
-    name: 'Rookie Scholar',
+    name: 'Rookie Bot',
     rarity: 'common',
-    price: 0,
+    price: 200,
     colors: { primary: '#3498db', secondary: '#2980b9', accent: '#ecf0f1' }
   },
-  student: {
-    name: 'Student',
-    rarity: 'uncommon',
-    price: 500,
-    colors: { primary: '#2ecc71', secondary: '#27ae60', accent: '#fff' }
-  },
-  graduate: {
-    name: 'Graduate',
-    rarity: 'rare',
-    price: 1000,
-    colors: { primary: '#9b59b6', secondary: '#8e44ad', accent: '#f1c40f' }
-  },
-  master_brain: {
-    name: 'Master Brain',
+  
+  // SPECIAL THEMED ROBOTS (User favorites!)
+  peely: {
+    name: 'Banana Bot',
     rarity: 'epic',
-    price: 2000,
-    colors: { primary: '#e74c3c', secondary: '#c0392b', accent: '#f39c12' }
+    price: 800,
+    battleTicket: false,
+    colors: { primary: '#fff200', secondary: '#ffd700', accent: '#8B4513' }
+  },
+  pug: {
+    name: 'Pug Bot',
+    rarity: 'epic',
+    price: 800,
+    battleTicket: false,
+    colors: { primary: '#D2B48C', secondary: '#8B7355', accent: '#000' }
   },
   
-  // Battle Ticket skins
-  season1_starter: {
-    name: 'Storm Cadet',
+  // AWESOME THEMED ROBOTS
+  cyber_ninja: {
+    name: 'Cyber Ninja',
+    rarity: 'legendary',
+    price: 1200,
+    battleTicket: false,
+    colors: { primary: '#1a1a2e', secondary: '#16213e', accent: '#0f3460' }
+  },
+  galaxy: {
+    name: 'Galaxy Bot',
+    rarity: 'legendary',
+    price: 1200,
+    battleTicket: false,
+    colors: { primary: '#4B0082', secondary: '#8B008B', accent: '#FFD700' }
+  },
+  lava: {
+    name: 'Lava Bot',
     rarity: 'rare',
-    battleTicket: true,
-    season: 1,
-    tier: 0,
-    colors: { primary: '#3498db', secondary: '#2c3e50', accent: '#1abc9c' }
+    price: 600,
+    battleTicket: false,
+    colors: { primary: '#ff4500', secondary: '#ff6347', accent: '#ffff00' }
   },
-  scholar: {
-    name: 'Wise Scholar',
+  ice: {
+    name: 'Ice Bot',
     rarity: 'rare',
-    battleTicket: true,
-    season: 1,
-    tier: 3,
-    colors: { primary: '#16a085', secondary: '#1abc9c', accent: '#f1c40f' }
+    price: 600,
+    battleTicket: false,
+    colors: { primary: '#87ceeb', secondary: '#4682b4', accent: '#ffffff' }
   },
-  professor: {
-    name: 'Professor',
-    rarity: 'epic',
-    battleTicket: true,
-    season: 1,
-    tier: 7,
-    colors: { primary: '#34495e', secondary: '#2c3e50', accent: '#e74c3c' }
-  },
-  einstein: {
-    name: 'Einstein',
-    rarity: 'epic',
-    battleTicket: true,
-    season: 1,
-    tier: 15,
-    colors: { primary: '#ecf0f1', secondary: '#bdc3c7', accent: '#3498db' }
-  },
-  wizard: {
-    name: 'Knowledge Wizard',
-    rarity: 'epic',
-    battleTicket: true,
-    season: 1,
-    tier: 20,
-    colors: { primary: '#9b59b6', secondary: '#8e44ad', accent: '#f39c12' }
-  },
-  cyborg: {
-    name: 'Cyborg Scholar',
+  golden: {
+    name: 'Golden Bot',
     rarity: 'legendary',
-    battleTicket: true,
-    season: 1,
-    tier: 25,
-    colors: { primary: '#34495e', secondary: '#7f8c8d', accent: '#1abc9c' }
+    price: 1500,
+    battleTicket: false,
+    colors: { primary: '#ffd700', secondary: '#ffed4e', accent: '#8b7500' }
   },
-  valedictorian: {
-    name: 'Valedictorian',
-    rarity: 'legendary',
-    battleTicket: true,
-    season: 1,
-    tier: 40,
-    colors: { primary: '#f39c12', secondary: '#f1c40f', accent: '#fff' }
+  neon: {
+    name: 'Neon Bot',
+    rarity: 'epic',
+    price: 900,
+    battleTicket: false,
+    colors: { primary: '#00ff00', secondary: '#00cc00', accent: '#000' }
   },
-  legendary_sage: {
-    name: 'Legendary Sage',
+  rainbow: {
+    name: 'Rainbow Bot',
     rarity: 'legendary',
+    price: 1800,
+    battleTicket: false,
+    colors: { primary: '#ff0080', secondary: '#00ffff', accent: '#ffff00' }
+  },
+  shadow: {
+    name: 'Shadow Bot',
+    rarity: 'epic',
+    price: 1000,
+    battleTicket: false,
+    colors: { primary: '#1a1a1a', secondary: '#333333', accent: '#ff0000' }
+  },
+  
+  // Battle Ticket Exclusive Robots
+  student: {
+    name: 'Student Bot',
+    rarity: 'common',
+    price: 0,
     battleTicket: true,
-    season: 1,
-    tier: 50,
-    colors: { primary: '#e67e22', secondary: '#d35400', accent: '#ecf0f1' }
+    colors: { primary: '#3498db', secondary: '#2980b9', accent: '#fff' }
+  },
+  graduate: {
+    name: 'Graduate Bot',
+    rarity: 'rare',
+    price: 0,
+    battleTicket: true,
+    colors: { primary: '#2ecc71', secondary: '#27ae60', accent: '#fff' }
+  },
+  master_brain: {
+    name: 'Master Brain Bot',
+    rarity: 'legendary',
+    price: 0,
+    battleTicket: true,
+    colors: { primary: '#9b59b6', secondary: '#8e44ad', accent: '#ffd700' }
   }
 };
 

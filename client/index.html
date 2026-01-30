@@ -1535,8 +1535,19 @@
         document.getElementById('lobby-screen').style.display = 'none';
         document.getElementById('game-screen').style.display = 'block';
         // Initialize game canvas and start gameplay
-        if (typeof initGame === 'function') {
-          initGame(data);
+        try {
+          if (typeof initGame === 'function') {
+            initGame(data);
+            console.log('✅ Game initialized successfully');
+          } else {
+            console.error('❌ initGame function not found');
+            alert('Game initialization error! Refresh the page.');
+          }
+        } catch (error) {
+          console.error('❌ Game initialization error:', error);
+          alert('Game failed to start: ' + error.message);
+          document.getElementById('game-screen').style.display = 'none';
+          showMenuScreen();
         }
       });
       
@@ -2605,81 +2616,85 @@
     function drawBuildings() {
       if (!gameState || !gameState.buildings) return;
       
-      gameState.buildings.forEach(building => {
-        const x = building.x - camera.x;
-        const y = building.y - camera.y;
-        const w = building.width || 70;
-        const h = building.height || 70;
-        
-        // Building shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(x + 5, y + 5, w, h);
-        
-        // Building colors based on type
-        let color1, color2;
-        switch(building.type) {
-          case 'house':
-            color1 = '#8B4513';
-            color2 = '#A0522D';
-            break;
-          case 'warehouse':
-            color1 = '#696969';
-            color2 = '#808080';
-            break;
-          case 'tower':
-            color1 = '#4682B4';
-            color2 = '#5F9EA0';
-            break;
-          case 'bunker':
-            color1 = '#556B2F';
-            color2 = '#6B8E23';
-            break;
-          default:
-            color1 = '#8B4513';
-            color2 = '#A0522D';
-        }
-        
-        // Building gradient
-        const buildingGradient = ctx.createLinearGradient(x, y, x + w, y + h);
-        buildingGradient.addColorStop(0, color1);
-        buildingGradient.addColorStop(1, color2);
-        ctx.fillStyle = buildingGradient;
-        ctx.fillRect(x, y, w, h);
-        
-        // Building border
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x, y, w, h);
-        
-        // Windows for buildings
-        if (building.type === 'house' || building.type === 'warehouse') {
-          ctx.fillStyle = 'rgba(255, 255, 200, 0.3)';
-          const windowSize = w / 5;
-          for (let wx = 0; wx < 2; wx++) {
-            for (let wy = 0; wy < 2; wy++) {
-              ctx.fillRect(
-                x + w * 0.2 + wx * w * 0.5,
-                y + h * 0.2 + wy * h * 0.4,
-                windowSize,
-                windowSize
-              );
+      try {
+        gameState.buildings.forEach(building => {
+          const x = building.x - camera.x;
+          const y = building.y - camera.y;
+          const w = building.width || 70;
+          const h = building.height || 70;
+          
+          // Building shadow
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+          ctx.fillRect(x + 5, y + 5, w, h);
+          
+          // Building colors based on type
+          let color1, color2;
+          switch(building.type) {
+            case 'house':
+              color1 = '#8B4513';
+              color2 = '#A0522D';
+              break;
+            case 'warehouse':
+              color1 = '#696969';
+              color2 = '#808080';
+              break;
+            case 'tower':
+              color1 = '#4682B4';
+              color2 = '#5F9EA0';
+              break;
+            case 'bunker':
+              color1 = '#556B2F';
+              color2 = '#6B8E23';
+              break;
+            default:
+              color1 = '#8B4513';
+              color2 = '#A0522D';
+          }
+          
+          // Building gradient
+          const buildingGradient = ctx.createLinearGradient(x, y, x + w, y + h);
+          buildingGradient.addColorStop(0, color1);
+          buildingGradient.addColorStop(1, color2);
+          ctx.fillStyle = buildingGradient;
+          ctx.fillRect(x, y, w, h);
+          
+          // Building border
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x, y, w, h);
+          
+          // Windows for buildings
+          if (building.type === 'house' || building.type === 'warehouse') {
+            ctx.fillStyle = 'rgba(255, 255, 200, 0.3)';
+            const windowSize = w / 5;
+            for (let wx = 0; wx < 2; wx++) {
+              for (let wy = 0; wy < 2; wy++) {
+                ctx.fillRect(
+                  x + w * 0.2 + wx * w * 0.5,
+                  y + h * 0.2 + wy * h * 0.4,
+                  windowSize,
+                  windowSize
+                );
+              }
             }
           }
-        }
-        
-        // Health bar if damaged
-        if (building.health < building.maxHealth) {
-          const barWidth = w;
-          const barHeight = 4;
-          const healthPercent = building.health / building.maxHealth;
           
-          ctx.fillStyle = '#000';
-          ctx.fillRect(x, y - 8, barWidth, barHeight);
-          
-          ctx.fillStyle = healthPercent > 0.5 ? '#2ecc71' : '#e74c3c';
-          ctx.fillRect(x, y - 8, barWidth * healthPercent, barHeight);
-        }
-      });
+          // Health bar if damaged
+          if (building.health < building.maxHealth) {
+            const barWidth = w;
+            const barHeight = 4;
+            const healthPercent = building.health / building.maxHealth;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x, y - 8, barWidth, barHeight);
+            
+            ctx.fillStyle = healthPercent > 0.5 ? '#2ecc71' : '#e74c3c';
+            ctx.fillRect(x, y - 8, barWidth * healthPercent, barHeight);
+          }
+        });
+      } catch (error) {
+        console.error('Error drawing buildings:', error);
+      }
     }
     
     function drawGround() {
@@ -2951,27 +2966,36 @@
         
         // Draw robot character!
         const skinId = player.skin || 'default';
-        if (typeof CharacterRenderer !== 'undefined') {
-          ctx.save();
-          ctx.translate(x, y);
-          CharacterRenderer.render(ctx, skinId, size);
-          ctx.restore();
-        } else {
-          // Fallback to circle if renderer not loaded
-          const bodyGradient = ctx.createRadialGradient(x, y - 5, 5, x, y + 5, size);
-          bodyGradient.addColorStop(0, isMe ? '#66FF66' : '#FF6666');
-          bodyGradient.addColorStop(1, isMe ? '#00CC00' : '#CC0000');
-          ctx.fillStyle = bodyGradient;
-          ctx.shadowColor = isMe ? '#00FF00' : '#FF0000';
-          ctx.shadowBlur = 15;
+        try {
+          if (typeof CharacterRenderer !== 'undefined' && CharacterRenderer.render) {
+            ctx.save();
+            ctx.translate(x, y);
+            CharacterRenderer.render(ctx, skinId, size);
+            ctx.restore();
+          } else {
+            // Fallback to circle if renderer not loaded
+            const bodyGradient = ctx.createRadialGradient(x, y - 5, 5, x, y + 5, size);
+            bodyGradient.addColorStop(0, isMe ? '#66FF66' : '#FF6666');
+            bodyGradient.addColorStop(1, isMe ? '#00CC00' : '#CC0000');
+            ctx.fillStyle = bodyGradient;
+            ctx.shadowColor = isMe ? '#00FF00' : '#FF0000';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(x, y, size * 0.7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+        } catch (error) {
+          console.error('Error rendering character:', error);
+          // Draw simple circle as fallback
+          ctx.fillStyle = isMe ? '#00FF00' : '#FF0000';
           ctx.beginPath();
           ctx.arc(x, y, size * 0.7, 0, Math.PI * 2);
           ctx.fill();
-          ctx.shadowBlur = 0;
-          
-          ctx.strokeStyle = '#000';
-          ctx.lineWidth = 3;
-          ctx.stroke();
         }
         
         // Username
