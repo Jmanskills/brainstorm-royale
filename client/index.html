@@ -373,6 +373,64 @@
       font-size: 12px;
       color: #666;
     }
+    
+    /* ========== SKIN SELECTOR ========== */
+    .skin-selector {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    
+    .skin-selector h3 {
+      color: white;
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .skin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding: 5px;
+    }
+    
+    .skin-card {
+      background: rgba(255, 255, 255, 0.2);
+      border: 3px solid transparent;
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+    
+    .skin-card:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
+    
+    .skin-card.selected {
+      border-color: #00ff00;
+      background: rgba(0, 255, 0, 0.2);
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    }
+    
+    .skin-preview {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto;
+    }
+    
+    .skin-name {
+      color: white;
+      font-size: 11px;
+      margin-top: 5px;
+      font-weight: bold;
+    }
 
     .menu-buttons {
       display: flex;
@@ -1120,6 +1178,14 @@
           </div>
         </div>
       </div>
+      
+      <!-- Skin Selector -->
+      <div class="skin-selector">
+        <h3>🤖 Choose Your Robot</h3>
+        <div class="skin-grid" id="skin-grid">
+          <!-- Skins will be populated here -->
+        </div>
+      </div>
 
       <div class="menu-buttons">
         <button class="menu-button primary-button" onclick="quickPlay()">⚡ Quick Play</button>
@@ -1512,6 +1578,7 @@
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('menu-screen').style.display = 'block';
       updateUserDisplay();
+      loadSkinSelector(); // Load robot skins!
     }
     
     function showLobbyScreen() {
@@ -2190,7 +2257,7 @@
         socket.emit('join-game', {
           gameCode: code,
           username: currentUser.username,
-          skin: currentUser.inventory?.equippedSkin || 'default'
+          skin: selectedSkin || 'default'
         });
       }
     }
@@ -2448,6 +2515,7 @@
       // Store game state
       gameState = data;
       gameState.bullets = gameState.bullets || []; // Ensure bullets array exists
+      gameState.buildings = gameState.buildings || []; // Ensure buildings array exists
       
       // Setup controls
       setupGameControls();
@@ -2459,6 +2527,8 @@
       requestAnimationFrame(gameLoop);
       
       console.log('✅ Game initialized!');
+      console.log(`📍 Map size: ${gameState.map.size}`);
+      console.log(`🏠 Buildings: ${gameState.buildings.length}`);
     }
     
     function setupGameControls() {
@@ -2492,8 +2562,6 @@
     function sendInputs() {
       if (!socket || !gameState) return;
       
-      const hasInput = keys['w'] || keys['s'] || keys['a'] || keys['d'];
-      
       // Send current input state to server
       socket.emit('player-input', {
         up: keys['w'] || false,
@@ -2503,16 +2571,6 @@
         mouseX: mouseWorldX,
         mouseY: mouseWorldY
       });
-      
-      // Debug log when keys are pressed
-      if (hasInput) {
-        console.log('📤 Sending input:', {
-          w: keys['w'],
-          a: keys['a'],
-          s: keys['s'],
-          d: keys['d']
-        });
-      }
     }
     
     // ========== GAME LOOP ==========
@@ -2529,6 +2587,7 @@
       // Draw game elements
       if (gameState) {
         drawGround();
+        drawBuildings(); // DRAW BUILDINGS FIRST!
         drawStorm();
         drawTriviaStations();
         drawPowerups();
@@ -2541,6 +2600,86 @@
       
       // Continue loop
       requestAnimationFrame(gameLoop);
+    }
+    
+    function drawBuildings() {
+      if (!gameState || !gameState.buildings) return;
+      
+      gameState.buildings.forEach(building => {
+        const x = building.x - camera.x;
+        const y = building.y - camera.y;
+        const w = building.width || 70;
+        const h = building.height || 70;
+        
+        // Building shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(x + 5, y + 5, w, h);
+        
+        // Building colors based on type
+        let color1, color2;
+        switch(building.type) {
+          case 'house':
+            color1 = '#8B4513';
+            color2 = '#A0522D';
+            break;
+          case 'warehouse':
+            color1 = '#696969';
+            color2 = '#808080';
+            break;
+          case 'tower':
+            color1 = '#4682B4';
+            color2 = '#5F9EA0';
+            break;
+          case 'bunker':
+            color1 = '#556B2F';
+            color2 = '#6B8E23';
+            break;
+          default:
+            color1 = '#8B4513';
+            color2 = '#A0522D';
+        }
+        
+        // Building gradient
+        const buildingGradient = ctx.createLinearGradient(x, y, x + w, y + h);
+        buildingGradient.addColorStop(0, color1);
+        buildingGradient.addColorStop(1, color2);
+        ctx.fillStyle = buildingGradient;
+        ctx.fillRect(x, y, w, h);
+        
+        // Building border
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, w, h);
+        
+        // Windows for buildings
+        if (building.type === 'house' || building.type === 'warehouse') {
+          ctx.fillStyle = 'rgba(255, 255, 200, 0.3)';
+          const windowSize = w / 5;
+          for (let wx = 0; wx < 2; wx++) {
+            for (let wy = 0; wy < 2; wy++) {
+              ctx.fillRect(
+                x + w * 0.2 + wx * w * 0.5,
+                y + h * 0.2 + wy * h * 0.4,
+                windowSize,
+                windowSize
+              );
+            }
+          }
+        }
+        
+        // Health bar if damaged
+        if (building.health < building.maxHealth) {
+          const barWidth = w;
+          const barHeight = 4;
+          const healthPercent = building.health / building.maxHealth;
+          
+          ctx.fillStyle = '#000';
+          ctx.fillRect(x, y - 8, barWidth, barHeight);
+          
+          ctx.fillStyle = healthPercent > 0.5 ? '#2ecc71' : '#e74c3c';
+          ctx.fillRect(x, y - 8, barWidth * healthPercent, barHeight);
+        }
+      });
     }
     
     function drawGround() {
@@ -2794,36 +2933,46 @@
         const x = player.x - camera.x;
         const y = player.y - camera.y;
         const isMe = player.id === socket.id;
+        const size = 30; // Robot size
         
         // Shadow
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
-        ctx.ellipse(x, y + 25, 22, 8, 0, 0, Math.PI * 2);
+        ctx.ellipse(x, y + size + 5, size * 0.8, size * 0.3, 0, 0, Math.PI * 2);
         ctx.fill();
         
         // Player glow
-        const playerGradient = ctx.createRadialGradient(x, y, 5, x, y, 35);
-        playerGradient.addColorStop(0, isMe ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)');
+        const glowColor = isMe ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
+        const playerGradient = ctx.createRadialGradient(x, y, 5, x, y, size + 15);
+        playerGradient.addColorStop(0, glowColor);
         playerGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
         ctx.fillStyle = playerGradient;
-        ctx.fillRect(x - 35, y - 35, 70, 70);
+        ctx.fillRect(x - size - 15, y - size - 15, size * 2 + 30, size * 2 + 30);
         
-        // Player body gradient
-        const bodyGradient = ctx.createRadialGradient(x, y - 5, 5, x, y + 5, 25);
-        bodyGradient.addColorStop(0, isMe ? '#66FF66' : '#FF6666');
-        bodyGradient.addColorStop(1, isMe ? '#00CC00' : '#CC0000');
-        ctx.fillStyle = bodyGradient;
-        ctx.shadowColor = isMe ? '#00FF00' : '#FF0000';
-        ctx.shadowBlur = 15;
-        ctx.beginPath();
-        ctx.arc(x, y, 22, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        
-        // Border
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 3;
-        ctx.stroke();
+        // Draw robot character!
+        const skinId = player.skin || 'default';
+        if (typeof CharacterRenderer !== 'undefined') {
+          ctx.save();
+          ctx.translate(x, y);
+          CharacterRenderer.render(ctx, skinId, size);
+          ctx.restore();
+        } else {
+          // Fallback to circle if renderer not loaded
+          const bodyGradient = ctx.createRadialGradient(x, y - 5, 5, x, y + 5, size);
+          bodyGradient.addColorStop(0, isMe ? '#66FF66' : '#FF6666');
+          bodyGradient.addColorStop(1, isMe ? '#00CC00' : '#CC0000');
+          ctx.fillStyle = bodyGradient;
+          ctx.shadowColor = isMe ? '#00FF00' : '#FF0000';
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          ctx.arc(x, y, size * 0.7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
         
         // Username
         ctx.fillStyle = '#FFF';
@@ -2831,28 +2980,28 @@
         ctx.font = 'bold 14px Arial';
         ctx.textAlign = 'center';
         ctx.lineWidth = 4;
-        ctx.strokeText(player.username, x, y - 35);
-        ctx.fillText(player.username, x, y - 35);
+        ctx.strokeText(player.username, x, y - size - 10);
+        ctx.fillText(player.username, x, y - size - 10);
         
         // Health bar background
-        const barWidth = 44;
+        const barWidth = 50;
         const barHeight = 6;
         const healthPercent = player.health / player.maxHealth;
         
         ctx.fillStyle = '#2C3E50';
-        ctx.fillRect(x - barWidth/2, y - 45, barWidth, barHeight);
+        ctx.fillRect(x - barWidth/2, y - size - 20, barWidth, barHeight);
         
         // Health bar foreground
         const healthGradient = ctx.createLinearGradient(x - barWidth/2, 0, x + barWidth/2, 0);
         healthGradient.addColorStop(0, '#FF3B3B');
         healthGradient.addColorStop(1, '#FF6B6B');
         ctx.fillStyle = healthGradient;
-        ctx.fillRect(x - barWidth/2, y - 45, barWidth * healthPercent, barHeight);
+        ctx.fillRect(x - barWidth/2, y - size - 20, barWidth * healthPercent, barHeight);
         
         // Health bar border
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 1.5;
-        ctx.strokeRect(x - barWidth/2, y - 45, barWidth, barHeight);
+        ctx.strokeRect(x - barWidth/2, y - size - 20, barWidth, barHeight);
       });
       
       // Update camera
@@ -2899,16 +3048,10 @@
     // ========== SOCKET LISTENERS FOR GAME ==========
     function setupGameSockets() {
       socket.on('game-update', (data) => {
-        console.log('📥 Game update received, players:', data.players?.length);
-        
         // Update players
         if (data.players) {
           players = data.players;
           myPlayer = players.find(p => p.id === socket.id);
-          
-          if (myPlayer) {
-            console.log(`👤 My position: (${myPlayer.x.toFixed(0)}, ${myPlayer.y.toFixed(0)})`);
-          }
         }
         
         // Update game state
@@ -2920,6 +3063,7 @@
         if (data.weaponSpawns) gameState.weaponSpawns = data.weaponSpawns;
         if (data.vehicles) gameState.vehicles = data.vehicles;
         if (data.bullets) gameState.bullets = data.bullets;
+        if (data.buildings) gameState.buildings = data.buildings;
       });
       
       socket.on('player-died', (data) => {
@@ -2938,12 +3082,69 @@
       alert('🚧 Google Sign-In Coming Soon!\n\nThis feature is being integrated. For now, please:\n• Create an account with email\n• Or continue as guest');
     }
     
+    // ========== SKIN SELECTOR ==========
+    let selectedSkin = 'default';
+    
+    function loadSkinSelector() {
+      const skinGrid = document.getElementById('skin-grid');
+      if (!skinGrid || typeof CharacterRenderer === 'undefined') return;
+      
+      const popularSkins = ['default', 'peely', 'pug', 'cyber_ninja', 'galaxy', 'lava', 'ice', 'golden'];
+      
+      skinGrid.innerHTML = '';
+      
+      popularSkins.forEach(skinId => {
+        const skin = CharacterRenderer.skins[skinId];
+        if (!skin) return;
+        
+        const card = document.createElement('div');
+        card.className = 'skin-card' + (skinId === selectedSkin ? ' selected' : '');
+        card.onclick = () => selectSkin(skinId);
+        
+        const preview = document.createElement('canvas');
+        preview.className = 'skin-preview';
+        preview.width = 60;
+        preview.height = 60;
+        
+        const ctx = preview.getContext('2d');
+        ctx.save();
+        ctx.translate(30, 30);
+        CharacterRenderer.render(ctx, skinId, 20);
+        ctx.restore();
+        
+        const name = document.createElement('div');
+        name.className = 'skin-name';
+        name.textContent = skin.name;
+        
+        card.appendChild(preview);
+        card.appendChild(name);
+        skinGrid.appendChild(card);
+      });
+    }
+    
+    function selectSkin(skinId) {
+      selectedSkin = skinId;
+      
+      // Update UI
+      document.querySelectorAll('.skin-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      event.currentTarget.classList.add('selected');
+      
+      // Save to current user
+      if (currentUser && currentUser.inventory) {
+        currentUser.inventory.equippedSkin = skinId;
+      }
+      
+      console.log('✅ Selected skin:', skinId);
+    }
+    
     // ========== AUTH FUNCTIONS ==========
 
     function createGame() {
       socket.emit('create-game', {
         username: currentUser.username,
-        skin: currentUser.inventory?.equippedSkin || 'default'
+        skin: selectedSkin || 'default'
       });
     }
 

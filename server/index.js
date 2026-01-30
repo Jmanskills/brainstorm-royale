@@ -62,46 +62,50 @@ app.get('/api/health', (req, res) => {
 const MAPS = {
   classic: {
     name: 'Classic Arena',
-    size: 2000,
+    size: 4000,  // BIGGER MAP! Was 2000
     playerSize: 30,
     theme: 'grass',
-    triviaStations: 15,
-    powerupSpawns: 20,
-    weaponSpawns: 30
+    triviaStations: 25,
+    powerupSpawns: 35,
+    weaponSpawns: 50,
+    buildings: 40  // ADD BUILDINGS!
   },
   mega: {
     name: 'Mega City',
-    size: 3500,
+    size: 5000,
     playerSize: 30,
     theme: 'urban',
-    triviaStations: 25,
-    powerupSpawns: 35,
-    weaponSpawns: 50
+    triviaStations: 30,
+    powerupSpawns: 50,
+    weaponSpawns: 70,
+    buildings: 60
   },
   desert: {
     name: 'Desert Storm',
-    size: 3000,
+    size: 4500,
     playerSize: 30,
     theme: 'desert',
-    triviaStations: 20,
-    powerupSpawns: 25,
-    weaponSpawns: 40
+    triviaStations: 25,
+    powerupSpawns: 40,
+    weaponSpawns: 55,
+    buildings: 30
   },
   island: {
     name: 'Brain Island',
-    size: 4000,
+    size: 6000,
     playerSize: 30,
     theme: 'island',
-    triviaStations: 30,
-    powerupSpawns: 40,
-    weaponSpawns: 60
+    triviaStations: 35,
+    powerupSpawns: 60,
+    weaponSpawns: 80,
+    buildings: 50
   }
 };
 
 const MAP_SIZE = 2000; // Default for backwards compatibility
 const PLAYER_SIZE = 30;
 const TICK_RATE = 60;
-const STORM_SHRINK_RATE = 0.5;
+const STORM_SHRINK_RATE = 0.15; // MUCH SLOWER! Was 0.5
 const STORM_DAMAGE_SCALING = true; // Increases damage over time
 
 const WEAPONS = {
@@ -604,6 +608,7 @@ io.on('connection', (socket) => {
     game.powerups = generatePowerups(game.map);
     game.weaponSpawns = generateWeaponSpawns(game.map);
     game.vehicles = generateVehicleSpawns(game.map, 10); // 10 vehicles per map
+    game.buildings = generateBuildings(game.map); // ADD BUILDINGS!
     game.activeEvents = getActiveEvents();
     
     io.to(gameId).emit('game-started', {
@@ -614,6 +619,7 @@ io.on('connection', (socket) => {
       powerups: game.powerups,
       weaponSpawns: game.weaponSpawns,
       vehicles: game.vehicles,
+      buildings: game.buildings, // SEND BUILDINGS!
       activeEvents: game.activeEvents
     });
     
@@ -1069,30 +1075,13 @@ io.on('connection', (socket) => {
   // ========== PLAYER MOVEMENT ==========
   socket.on('player-input', (data) => {
     const gameId = playerGames.get(socket.id);
-    if (!gameId) {
-      console.log('❌ No gameId for player input');
-      return;
-    }
+    if (!gameId) return;
     
     const game = games.get(gameId);
-    if (!game) {
-      console.log('❌ No game found');
-      return;
-    }
-    if (game.state !== 'playing') {
-      console.log('❌ Game not playing, state:', game.state);
-      return;
-    }
+    if (!game || game.state !== 'playing') return;
     
     const player = game.players.get(socket.id);
-    if (!player) {
-      console.log('❌ No player found');
-      return;
-    }
-    if (!player.isAlive) {
-      console.log('❌ Player not alive');
-      return;
-    }
+    if (!player || !player.isAlive) return;
     
     // Calculate movement
     const speed = 5;
@@ -1109,11 +1098,6 @@ io.on('connection', (socket) => {
       const magnitude = Math.sqrt(dx * dx + dy * dy);
       dx = (dx / magnitude) * speed;
       dy = (dy / magnitude) * speed;
-    }
-    
-    // Debug log
-    if (dx !== 0 || dy !== 0) {
-      console.log(`🏃 Player ${player.username} moving: dx=${dx.toFixed(1)}, dy=${dy.toFixed(1)}, pos=(${player.x.toFixed(0)}, ${player.y.toFixed(0)})`);
     }
     
     // Update position
@@ -1636,6 +1620,32 @@ function generateWeaponSpawns(map) {
   }
   
   return spawns;
+}
+
+function generateBuildings(map) {
+  const buildings = [];
+  const buildingCount = map.buildings || 30;
+  
+  const buildingTypes = ['house', 'warehouse', 'tower', 'bunker'];
+  
+  for (let i = 0; i < buildingCount; i++) {
+    const type = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
+    const size = type === 'tower' ? 60 : type === 'warehouse' ? 100 : 70;
+    
+    buildings.push({
+      id: uuidv4(),
+      type: type,
+      x: Math.random() * (map.size - 400) + 200,
+      y: Math.random() * (map.size - 400) + 200,
+      width: size,
+      height: size,
+      health: type === 'bunker' ? 500 : 300,
+      maxHealth: type === 'bunker' ? 500 : 300,
+      material: 'brick'
+    });
+  }
+  
+  return buildings;
 }
 
 function filterProfanity(text) {
