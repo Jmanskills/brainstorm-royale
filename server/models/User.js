@@ -45,12 +45,12 @@ const UserSchema = new mongoose.Schema({
   
   // Inventory & Cosmetics
   inventory: {
-    ownedSkins: [{ type: String, default: ['default', 'rookie'] }],
+    ownedSkins: { type: [String], default: ['default'] }, // ONLY default skin!
     equippedSkin: { type: String, default: 'default' },
-    ownedEmotes: [{ type: String, default: ['wave', 'thumbsup'] }],
-    ownedTrails: [{ type: String, default: ['default'] }],
+    ownedEmotes: { type: [String], default: ['wave', 'thumbsup'] },
+    ownedTrails: { type: [String], default: ['default'] },
     equippedTrail: { type: String, default: 'default' },
-    ownedWeaponSkins: [{ type: String, default: [] }],
+    ownedWeaponSkins: { type: [String], default: [] },
     equippedWeaponSkins: {
       type: Map,
       of: String,

@@ -419,6 +419,16 @@
       box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
     }
     
+    .skin-card.locked {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .skin-card.locked:hover {
+      transform: none;
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
     .skin-preview {
       width: 60px;
       height: 60px;
@@ -2606,6 +2616,7 @@
       // Draw game elements (order matters for layering!)
       if (gameState) {
         drawGround();
+        drawPOILabels(); // POI names like Fortnite!
         drawBuildings(); // Buildings first
         drawChests(); // Chests on buildings
         drawStorm();
@@ -2827,7 +2838,7 @@
       
       const mapSize = gameState.map.size;
       
-      // Draw grass with gradient
+      // Base grass gradient
       const grassGradient = ctx.createLinearGradient(0, 0, mapSize, mapSize);
       grassGradient.addColorStop(0, '#7EC850');
       grassGradient.addColorStop(0.5, '#6DBE45');
@@ -2835,21 +2846,168 @@
       ctx.fillStyle = grassGradient;
       ctx.fillRect(-camera.x, -camera.y, mapSize, mapSize);
       
-      // Draw subtle grass pattern
-      ctx.fillStyle = 'rgba(100, 170, 60, 0.1)';
-      const patternSize = 50;
-      for (let x = 0; x < mapSize; x += patternSize) {
-        for (let y = 0; y < mapSize; y += patternSize) {
-          if ((x + y) % 100 === 0) {
-            ctx.fillRect(x - camera.x, y - camera.y, patternSize, patternSize);
+      // Fortnite-style grass patches
+      const patchSize = 120;
+      const darkGrass = '#5AAA3A';
+      const lightGrass = '#8FD460';
+      
+      for (let x = 0; x < mapSize; x += patchSize) {
+        for (let y = 0; y < mapSize; y += patchSize) {
+          const px = x - camera.x;
+          const py = y - camera.y;
+          
+          // Only draw visible patches
+          if (px > -patchSize && px < canvas.width + patchSize &&
+              py > -patchSize && py < canvas.height + patchSize) {
+            const seed = x * 73 + y * 37;
+            if (seed % 3 !== 0) {
+              ctx.fillStyle = (seed % 2 === 0) ? darkGrass : lightGrass;
+              ctx.globalAlpha = 0.25;
+              ctx.fillRect(px, py, patchSize * 0.9, patchSize * 0.9);
+              ctx.globalAlpha = 1;
+            }
           }
         }
       }
       
-      // Draw border
-      ctx.strokeStyle = '#4A7C2E';
+      // Trees (consistent positions)
+      const treeCount = 80;
+      for (let i = 0; i < treeCount; i++) {
+        const seed = i * 12345;
+        const treeX = (seed * 9301 + 49297) % mapSize;
+        const treeY = (seed * 9283 + 48271) % mapSize;
+        const px = treeX - camera.x;
+        const py = treeY - camera.y;
+        
+        if (px > -50 && px < canvas.width + 50 && py > -50 && py < canvas.height + 50) {
+          drawTree(px, py);
+        }
+      }
+      
+      // Rocks
+      const rockCount = 40;
+      for (let i = 0; i < rockCount; i++) {
+        const seed = i * 54321;
+        const rockX = (seed * 9301 + 49297) % mapSize;
+        const rockY = (seed * 9283 + 48271) % mapSize;
+        const px = rockX - camera.x;
+        const py = rockY - camera.y;
+        
+        if (px > -30 && px < canvas.width + 30 && py > -30 && py < canvas.height + 30) {
+          drawRock(px, py);
+        }
+      }
+      
+      // Border
+      ctx.strokeStyle = '#3D7A2C';
       ctx.lineWidth = 10;
       ctx.strokeRect(-camera.x, -camera.y, mapSize, mapSize);
+    }
+    
+    function drawTree(x, y) {
+      // Trunk
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(x - 4, y, 8, 22);
+      
+      // Foliage layers
+      ctx.fillStyle = '#2D5016';
+      ctx.beginPath();
+      ctx.arc(x, y - 5, 16, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = '#3A6B1F';
+      ctx.beginPath();
+      ctx.arc(x - 9, y, 13, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.arc(x + 9, y, 13, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Highlight
+      ctx.fillStyle = '#4D8028';
+      ctx.beginPath();
+      ctx.arc(x - 4, y - 8, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    function drawRock(x, y) {
+      // Shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.ellipse(x, y + 12, 18, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Rock
+      ctx.fillStyle = '#7A7A7A';
+      ctx.beginPath();
+      ctx.ellipse(x, y, 16, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Highlight
+      ctx.fillStyle = '#999';
+      ctx.beginPath();
+      ctx.ellipse(x - 4, y - 4, 6, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Dark edge
+      ctx.fillStyle = '#555';
+      ctx.beginPath();
+      ctx.ellipse(x + 5, y + 5, 4, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    function drawPOILabels() {
+      if (!gameState || !gameState.map || !gameState.map.pois) return;
+      
+      gameState.map.pois.forEach(poi => {
+        const x = poi.x - camera.x;
+        const y = poi.y - camera.y;
+        
+        // Only draw if POI center is roughly on screen
+        if (x < -300 || x > canvas.width + 300 || y < -300 || y > canvas.height + 300) return;
+        
+        // POI area circle (subtle)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([15, 15]);
+        ctx.beginPath();
+        ctx.arc(x, y, poi.size / 2, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // POI name (Fortnite style!)
+        ctx.save();
+        
+        // Shadow
+        ctx.font = 'bold 30px Arial';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 8;
+        ctx.strokeText(poi.name, x, y - poi.size/2 - 40);
+        
+        // White text
+        ctx.fillStyle = '#FFF';
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = 10;
+        ctx.fillText(poi.name, x, y - poi.size/2 - 40);
+        ctx.shadowBlur = 0;
+        
+        // Icon
+        const icons = {
+          urban: '🏘️', mall: '🏬', castle: '🏰',
+          park: '🌳', forest: '🌲', military: '⚔️', island: '🏝️'
+        };
+        const icon = icons[poi.type] || '📍';
+        
+        ctx.font = '36px Arial';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 4;
+        ctx.strokeText(icon, x, y - poi.size/2 - 75);
+        ctx.fillText(icon, x, y - poi.size/2 - 75);
+        
+        ctx.restore();
+      });
     }
     
     function drawStorm() {
@@ -3274,6 +3432,7 @@
       if (!skinGrid || typeof CharacterRenderer === 'undefined') return;
       
       const popularSkins = ['default', 'peely', 'pug', 'cyber_ninja', 'galaxy', 'lava', 'ice', 'golden'];
+      const ownedSkins = currentUser?.inventory?.ownedSkins || ['default'];
       
       skinGrid.innerHTML = '';
       
@@ -3281,9 +3440,22 @@
         const skin = CharacterRenderer.skins[skinId];
         if (!skin) return;
         
+        const isOwned = ownedSkins.includes(skinId);
+        const isSelected = skinId === selectedSkin;
+        
         const card = document.createElement('div');
-        card.className = 'skin-card' + (skinId === selectedSkin ? ' selected' : '');
-        card.onclick = () => selectSkin(skinId);
+        card.className = 'skin-card' + 
+          (isSelected ? ' selected' : '') + 
+          (!isOwned ? ' locked' : '');
+        
+        // Only allow selecting owned skins
+        if (isOwned) {
+          card.onclick = () => selectSkin(skinId);
+        } else {
+          card.onclick = () => {
+            alert('🔒 This skin is locked! Purchase it from the shop.');
+          };
+        }
         
         const preview = document.createElement('canvas');
         preview.className = 'skin-preview';
@@ -3291,10 +3463,31 @@
         preview.height = 60;
         
         const ctx = preview.getContext('2d');
+        
+        // Darken if locked
+        if (!isOwned) {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillRect(0, 0, 60, 60);
+        }
+        
         ctx.save();
         ctx.translate(30, 30);
+        if (!isOwned) {
+          ctx.globalAlpha = 0.3; // Dim locked skins
+        }
         CharacterRenderer.render(ctx, skinId, 20);
         ctx.restore();
+        
+        // Lock icon
+        if (!isOwned) {
+          ctx.font = 'bold 24px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#FFF';
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 3;
+          ctx.strokeText('🔒', 30, 35);
+          ctx.fillText('🔒', 30, 35);
+        }
         
         const name = document.createElement('div');
         name.className = 'skin-name';
@@ -3307,6 +3500,14 @@
     }
     
     function selectSkin(skinId) {
+      const ownedSkins = currentUser?.inventory?.ownedSkins || ['default'];
+      
+      // Check if owned
+      if (!ownedSkins.includes(skinId)) {
+        alert('🔒 You don\'t own this skin! Buy it from the shop.');
+        return;
+      }
+      
       selectedSkin = skinId;
       
       // Update UI

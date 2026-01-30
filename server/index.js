@@ -61,14 +61,79 @@ app.get('/api/health', (req, res) => {
 // ============== GAME CONSTANTS ==============
 const MAPS = {
   classic: {
-    name: 'Classic Arena',
-    size: 4000,  // BIGGER MAP! Was 2000
+    name: 'Brain Island',
+    size: 4000,  // BIGGER MAP!
     playerSize: 30,
-    theme: 'grass',
+    theme: 'fortnite',
     triviaStations: 25,
     powerupSpawns: 35,
     weaponSpawns: 50,
-    buildings: 40  // ADD BUILDINGS!
+    buildings: 80, // More buildings!
+    pois: [ // FORTNITE-STYLE LOCATIONS!
+      { 
+        name: 'Brainy Burbs', 
+        x: 1000, 
+        y: 1000, 
+        size: 400, 
+        buildings: 15,
+        chests: 8,
+        type: 'urban'
+      },
+      { 
+        name: 'Knowledge Keep', 
+        x: 3000, 
+        y: 1000, 
+        size: 350, 
+        buildings: 12,
+        chests: 6,
+        type: 'castle'
+      },
+      { 
+        name: 'IQ Island', 
+        x: 2000, 
+        y: 2000, 
+        size: 300, 
+        buildings: 8,
+        chests: 5,
+        type: 'island'
+      },
+      { 
+        name: 'Memory Mall', 
+        x: 3200, 
+        y: 2800, 
+        size: 500, 
+        buildings: 20,
+        chests: 10,
+        type: 'mall'
+      },
+      { 
+        name: 'Puzzle Park', 
+        x: 800, 
+        y: 2500, 
+        size: 350, 
+        buildings: 10,
+        chests: 5,
+        type: 'park'
+      },
+      { 
+        name: 'Genius Grove', 
+        x: 2000, 
+        y: 3500, 
+        size: 400, 
+        buildings: 12,
+        chests: 7,
+        type: 'forest'
+      },
+      { 
+        name: 'Think Tank', 
+        x: 500, 
+        y: 500, 
+        size: 300, 
+        buildings: 8,
+        chests: 4,
+        type: 'military'
+      }
+    ]
   },
   mega: {
     name: 'Mega City',
@@ -1670,25 +1735,62 @@ function generateWeaponSpawns(map) {
 
 function generateBuildings(map) {
   const buildings = [];
-  const buildingCount = map.buildings || 30;
   
-  const buildingTypes = ['house', 'warehouse', 'tower', 'bunker'];
-  
-  for (let i = 0; i < buildingCount; i++) {
-    const type = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
-    const size = type === 'tower' ? 60 : type === 'warehouse' ? 100 : 70;
-    
-    buildings.push({
-      id: uuidv4(),
-      type: type,
-      x: Math.random() * (map.size - 400) + 200,
-      y: Math.random() * (map.size - 400) + 200,
-      width: size,
-      height: size,
-      health: type === 'bunker' ? 500 : 300,
-      maxHealth: type === 'bunker' ? 500 : 300,
-      material: 'brick'
+  // If map has POIs, generate clustered buildings
+  if (map.pois && map.pois.length > 0) {
+    map.pois.forEach(poi => {
+      const buildingCount = poi.buildings || 10;
+      
+      for (let i = 0; i < buildingCount; i++) {
+        // Cluster buildings around POI center
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * (poi.size / 2);
+        const x = poi.x + Math.cos(angle) * distance;
+        const y = poi.y + Math.sin(angle) * distance;
+        
+        const type = poi.type === 'urban' ? (Math.random() > 0.5 ? 'house' : 'warehouse') :
+                     poi.type === 'mall' ? 'warehouse' :
+                     poi.type === 'castle' ? 'tower' :
+                     poi.type === 'military' ? 'bunker' :
+                     ['house', 'warehouse', 'tower'][Math.floor(Math.random() * 3)];
+        
+        const size = type === 'tower' ? 60 : 
+                     type === 'warehouse' ? 100 : 
+                     type === 'bunker' ? 90 : 70;
+        
+        buildings.push({
+          id: uuidv4(),
+          type: type,
+          x: x,
+          y: y,
+          width: size,
+          height: size,
+          health: type === 'bunker' ? 500 : 300,
+          maxHealth: type === 'bunker' ? 500 : 300,
+          material: 'brick',
+          poi: poi.name // Tag with POI name
+        });
+      }
     });
+  } else {
+    // Fallback: Random building placement
+    const buildingCount = map.buildings || 30;
+    for (let i = 0; i < buildingCount; i++) {
+      const type = ['house', 'warehouse', 'tower', 'bunker'][Math.floor(Math.random() * 4)];
+      const size = type === 'tower' ? 60 : type === 'warehouse' ? 100 : 70;
+      
+      buildings.push({
+        id: uuidv4(),
+        type: type,
+        x: Math.random() * (map.size - 400) + 200,
+        y: Math.random() * (map.size - 400) + 200,
+        width: size,
+        height: size,
+        health: type === 'bunker' ? 500 : 300,
+        maxHealth: type === 'bunker' ? 500 : 300,
+        material: 'brick'
+      });
+    }
   }
   
   return buildings;
@@ -1696,44 +1798,128 @@ function generateBuildings(map) {
 
 function generateChests(map) {
   const chests = [];
-  const chestCount = Math.floor(map.size / 100); // 1 chest per 100 units
   
-  for (let i = 0; i < chestCount; i++) {
-    const rarity = Math.random();
-    let chestType = 'common';
-    let lootQuality = 1;
-    
-    if (rarity > 0.95) {
-      chestType = 'legendary';
-      lootQuality = 4;
-    } else if (rarity > 0.85) {
-      chestType = 'epic';
-      lootQuality = 3;
-    } else if (rarity > 0.7) {
-      chestType = 'rare';
-      lootQuality = 2;
-    }
-    
-    chests.push({
-      id: uuidv4(),
-      type: chestType,
-      x: Math.random() * (map.size - 400) + 200,
-      y: Math.random() * (map.size - 400) + 200,
-      opened: false,
-      lootQuality: lootQuality,
-      // Chest contains random loot
-      loot: {
-        weapon: generateChestWeapon(lootQuality),
-        ammo: 30 + (lootQuality * 20),
-        health: lootQuality >= 2 ? 50 : 0,
-        shield: lootQuality >= 3 ? 50 : 0,
-        materials: {
-          wood: 50 * lootQuality,
-          brick: 30 * lootQuality,
-          metal: 20 * lootQuality
+  // If map has POIs, spawn chests in them
+  if (map.pois && map.pois.length > 0) {
+    map.pois.forEach(poi => {
+      const chestCount = poi.chests || 5;
+      
+      for (let i = 0; i < chestCount; i++) {
+        // Cluster chests in POI
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * (poi.size / 2.5); // Closer to center
+        const x = poi.x + Math.cos(angle) * distance;
+        const y = poi.y + Math.sin(angle) * distance;
+        
+        const rarity = Math.random();
+        let chestType = 'common';
+        let lootQuality = 1;
+        
+        // Higher chance of good loot in certain POIs
+        const rarityBoost = (poi.name === 'Memory Mall' || poi.name === 'Knowledge Keep') ? 0.1 : 0;
+        
+        if (rarity + rarityBoost > 0.95) {
+          chestType = 'legendary';
+          lootQuality = 4;
+        } else if (rarity + rarityBoost > 0.85) {
+          chestType = 'epic';
+          lootQuality = 3;
+        } else if (rarity + rarityBoost > 0.7) {
+          chestType = 'rare';
+          lootQuality = 2;
         }
+        
+        chests.push({
+          id: uuidv4(),
+          type: chestType,
+          x: x,
+          y: y,
+          opened: false,
+          lootQuality: lootQuality,
+          poi: poi.name, // Tag with POI
+          loot: {
+            weapon: generateChestWeapon(lootQuality),
+            ammo: 30 + (lootQuality * 20),
+            health: lootQuality >= 2 ? 50 : 0,
+            shield: lootQuality >= 3 ? 50 : 0,
+            materials: {
+              wood: 50 * lootQuality,
+              brick: 30 * lootQuality,
+              metal: 20 * lootQuality
+            }
+          }
+        });
       }
     });
+    
+    // Add some random chests outside POIs
+    const randomChests = Math.floor(map.size / 200);
+    for (let i = 0; i < randomChests; i++) {
+      const rarity = Math.random();
+      let chestType = 'common';
+      let lootQuality = 1;
+      
+      if (rarity > 0.9) chestType = 'rare', lootQuality = 2;
+      
+      chests.push({
+        id: uuidv4(),
+        type: chestType,
+        x: Math.random() * (map.size - 400) + 200,
+        y: Math.random() * (map.size - 400) + 200,
+        opened: false,
+        lootQuality: lootQuality,
+        loot: {
+          weapon: generateChestWeapon(lootQuality),
+          ammo: 30 + (lootQuality * 20),
+          health: lootQuality >= 2 ? 50 : 0,
+          shield: lootQuality >= 3 ? 50 : 0,
+          materials: {
+            wood: 50 * lootQuality,
+            brick: 30 * lootQuality,
+            metal: 20 * lootQuality
+          }
+        }
+      });
+    }
+  } else {
+    // Fallback: Random chest placement
+    const chestCount = Math.floor(map.size / 100);
+    for (let i = 0; i < chestCount; i++) {
+      const rarity = Math.random();
+      let chestType = 'common';
+      let lootQuality = 1;
+      
+      if (rarity > 0.95) {
+        chestType = 'legendary';
+        lootQuality = 4;
+      } else if (rarity > 0.85) {
+        chestType = 'epic';
+        lootQuality = 3;
+      } else if (rarity > 0.7) {
+        chestType = 'rare';
+        lootQuality = 2;
+      }
+      
+      chests.push({
+        id: uuidv4(),
+        type: chestType,
+        x: Math.random() * (map.size - 400) + 200,
+        y: Math.random() * (map.size - 400) + 200,
+        opened: false,
+        lootQuality: lootQuality,
+        loot: {
+          weapon: generateChestWeapon(lootQuality),
+          ammo: 30 + (lootQuality * 20),
+          health: lootQuality >= 2 ? 50 : 0,
+          shield: lootQuality >= 3 ? 50 : 0,
+          materials: {
+            wood: 50 * lootQuality,
+            brick: 30 * lootQuality,
+            metal: 20 * lootQuality
+          }
+        }
+      });
+    }
   }
   
   return chests;
