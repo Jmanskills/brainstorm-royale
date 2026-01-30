@@ -1458,6 +1458,11 @@
         showLobbyScreen();
       });
       
+      socket.on('join-error', (data) => {
+        console.error('Join error:', data);
+        alert('❌ ' + data.message);
+      });
+      
       socket.on('game-started', (data) => {
         console.log('Game starting!', data);
         // Hide lobby, show game screen
@@ -2487,6 +2492,8 @@
     function sendInputs() {
       if (!socket || !gameState) return;
       
+      const hasInput = keys['w'] || keys['s'] || keys['a'] || keys['d'];
+      
       // Send current input state to server
       socket.emit('player-input', {
         up: keys['w'] || false,
@@ -2496,6 +2503,16 @@
         mouseX: mouseWorldX,
         mouseY: mouseWorldY
       });
+      
+      // Debug log when keys are pressed
+      if (hasInput) {
+        console.log('📤 Sending input:', {
+          w: keys['w'],
+          a: keys['a'],
+          s: keys['s'],
+          d: keys['d']
+        });
+      }
     }
     
     // ========== GAME LOOP ==========
@@ -2882,10 +2899,16 @@
     // ========== SOCKET LISTENERS FOR GAME ==========
     function setupGameSockets() {
       socket.on('game-update', (data) => {
+        console.log('📥 Game update received, players:', data.players?.length);
+        
         // Update players
         if (data.players) {
           players = data.players;
           myPlayer = players.find(p => p.id === socket.id);
+          
+          if (myPlayer) {
+            console.log(`👤 My position: (${myPlayer.x.toFixed(0)}, ${myPlayer.y.toFixed(0)})`);
+          }
         }
         
         // Update game state

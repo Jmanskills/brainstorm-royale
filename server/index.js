@@ -1069,13 +1069,30 @@ io.on('connection', (socket) => {
   // ========== PLAYER MOVEMENT ==========
   socket.on('player-input', (data) => {
     const gameId = playerGames.get(socket.id);
-    if (!gameId) return;
+    if (!gameId) {
+      console.log('❌ No gameId for player input');
+      return;
+    }
     
     const game = games.get(gameId);
-    if (!game || game.state !== 'playing') return;
+    if (!game) {
+      console.log('❌ No game found');
+      return;
+    }
+    if (game.state !== 'playing') {
+      console.log('❌ Game not playing, state:', game.state);
+      return;
+    }
     
     const player = game.players.get(socket.id);
-    if (!player || !player.isAlive) return;
+    if (!player) {
+      console.log('❌ No player found');
+      return;
+    }
+    if (!player.isAlive) {
+      console.log('❌ Player not alive');
+      return;
+    }
     
     // Calculate movement
     const speed = 5;
@@ -1092,6 +1109,11 @@ io.on('connection', (socket) => {
       const magnitude = Math.sqrt(dx * dx + dy * dy);
       dx = (dx / magnitude) * speed;
       dy = (dy / magnitude) * speed;
+    }
+    
+    // Debug log
+    if (dx !== 0 || dy !== 0) {
+      console.log(`🏃 Player ${player.username} moving: dx=${dx.toFixed(1)}, dy=${dy.toFixed(1)}, pos=(${player.x.toFixed(0)}, ${player.y.toFixed(0)})`);
     }
     
     // Update position
