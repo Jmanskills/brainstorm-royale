@@ -1209,10 +1209,10 @@
 
       <!-- Shop Tabs -->
       <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd;">
-        <button class="shop-tab active" onclick="switchShopTab('featured')" data-tab="featured">⭐ Featured</button>
-        <button class="shop-tab" onclick="switchShopTab('skins')" data-tab="skins">🎨 Skins</button>
+        <button class="shop-tab active" onclick="switchShopTab('skins')" data-tab="skins">🎨 Skins</button>
         <button class="shop-tab" onclick="switchShopTab('emotes')" data-tab="emotes">😊 Emotes</button>
         <button class="shop-tab" onclick="switchShopTab('trails')" data-tab="trails">✨ Trails</button>
+        <button class="shop-tab" onclick="switchShopTab('weapon_skins')" data-tab="weapon_skins">🔫 Weapon Skins</button>
         <button class="shop-tab" onclick="switchShopTab('bundles')" data-tab="bundles">📦 Bundles</button>
       </div>
 
@@ -2083,12 +2083,12 @@
     }
 
     // ========== SHOP FUNCTIONS ==========
-    let currentShopTab = 'featured';
+    let currentShopTab = 'skins';
     
     async function openShop() {
       document.getElementById('shop-modal').classList.add('active');
       document.getElementById('shop-coins-display').textContent = currentUser.stats.coins;
-      await loadShopItems('featured');
+      await loadShopItems('skins');
     }
     
     function closeShop() {
@@ -2113,13 +2113,7 @@
       try {
         let items = [];
         
-        if (category === 'featured') {
-          const res = await fetch('/api/shop/featured', {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-          });
-          const data = await res.json();
-          items = data.items || [];
-        } else if (category === 'bundles') {
+        if (category === 'bundles') {
           const res = await fetch('/api/shop/bundles', {
             headers: { 'Authorization': `Bearer ${authToken}` }
           });
@@ -2127,32 +2121,45 @@
           content.innerHTML = renderBundles(data);
           return;
         } else {
+          // Load all items and filter by category
           const res = await fetch('/api/shop/items', {
             headers: { 'Authorization': `Bearer ${authToken}` }
           });
-          const data = await res.json();
-          items = data.filter(item => item.type === category);
+          const allItems = await res.json();
+          
+          // Map category names to item types
+          const typeMap = {
+            'skins': 'skin',
+            'emotes': 'emote',
+            'trails': 'trail',
+            'weapon_skins': 'weapon_skin'
+          };
+          
+          const itemType = typeMap[category];
+          items = allItems.filter(item => item.type === itemType);
+          
+          console.log(`Category: ${category}, Type: ${itemType}, Items found:`, items.length);
         }
         
-        content.innerHTML = renderShopItems(items);
+        content.innerHTML = renderShopItems(items, category);
       } catch (error) {
         console.error('Load shop error:', error);
         content.innerHTML = '<p style="text-align: center; color: red;">Error loading shop</p>';
       }
     }
     
-    function renderShopItems(items) {
+    function renderShopItems(items, category) {
       if (items.length === 0) {
-        return '<p style="text-align: center; color: #666;">No items available</p>';
+        return '<p style="text-align: center; color: #666;">No items available in this category</p>';
       }
       
       return `
         <div class="shop-grid">
           ${items.map(item => `
             <div class="shop-item ${item.owned ? 'owned' : ''}">
-              <div class="shop-item-icon">${getItemIcon(item.type)}</div>
+              <div class="shop-item-icon">${getItemIcon(item.type, item)}</div>
               <div class="shop-item-name">${item.name}</div>
-              <div class="shop-item-rarity rarity-${item.rarity || 'common'}">${item.rarity || 'Common'}</div>
+              <div class="shop-item-rarity rarity-${item.rarity || 'common'}">${(item.rarity || 'common').toUpperCase()}</div>
               <div class="shop-item-price">💰 ${item.price}</div>
               ${item.owned 
                 ? '<div class="shop-owned-badge">✅ Owned</div>'
@@ -2165,6 +2172,10 @@
     }
     
     function renderBundles(bundles) {
+      if (!bundles || bundles.length === 0) {
+        return '<p style="text-align: center; color: #666;">No bundles available</p>';
+      }
+      
       return bundles.map(bundle => `
         <div class="bundle-card">
           <h3 style="margin-bottom: 10px;">${bundle.name}</h3>
@@ -2191,13 +2202,27 @@
       `).join('');
     }
     
-    function getItemIcon(type) {
+    function getItemIcon(type, item) {
       const icons = {
-        skins: '🎨',
-        emotes: '😊',
-        trails: '✨',
-        weapon_skins: '🔫'
+        skin: '🤖',
+        emote: '😊',
+        trail: '✨',
+        weapon_skin: '🔫'
       };
+      
+      // For weapon skins, could show specific weapon icons
+      if (type === 'weapon_skin' && item && item.weapon) {
+        const weaponIcons = {
+          pistol: '🔫',
+          rifle: '🎯',
+          shotgun: '💥',
+          sniper: '🎯',
+          smg: '⚡',
+          rocket_launcher: '🚀'
+        };
+        return weaponIcons[item.weapon] || '🔫';
+      }
+      
       return icons[type] || '🎁';
     }
     
