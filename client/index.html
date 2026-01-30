@@ -2525,8 +2525,9 @@
       
       // Store game state
       gameState = data;
-      gameState.bullets = gameState.bullets || []; // Ensure bullets array exists
-      gameState.buildings = gameState.buildings || []; // Ensure buildings array exists
+      gameState.bullets = gameState.bullets || [];
+      gameState.buildings = gameState.buildings || [];
+      gameState.chests = gameState.chests || []; // Add chests!
       
       // Setup controls
       setupGameControls();
@@ -2540,12 +2541,19 @@
       console.log('✅ Game initialized!');
       console.log(`📍 Map size: ${gameState.map.size}`);
       console.log(`🏠 Buildings: ${gameState.buildings.length}`);
+      console.log(`📦 Chests: ${gameState.chests.length}`);
     }
     
     function setupGameControls() {
       // Keyboard controls
       window.addEventListener('keydown', (e) => {
         keys[e.key.toLowerCase()] = true;
+        
+        // E key to open chests
+        if (e.key.toLowerCase() === 'e' && window.nearbyChestId) {
+          socket.emit('open-chest', { chestId: window.nearbyChestId });
+          window.nearbyChestId = null; // Clear so we don't spam
+        }
       });
       
       window.addEventListener('keyup', (e) => {
@@ -2595,22 +2603,139 @@
       ctx.fillStyle = skyGradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Draw game elements
+      // Draw game elements (order matters for layering!)
       if (gameState) {
         drawGround();
-        drawBuildings(); // DRAW BUILDINGS FIRST!
+        drawBuildings(); // Buildings first
+        drawChests(); // Chests on buildings
         drawStorm();
         drawTriviaStations();
         drawPowerups();
         drawWeapons();
         drawVehicles();
         drawBullets();
-        drawPlayers();
+        drawPlayers(); // Players on top
         drawUI();
+        checkChestProximity(); // Check if near chest
       }
       
       // Continue loop
       requestAnimationFrame(gameLoop);
+    }
+    
+    function drawChests() {
+      if (!gameState || !gameState.chests) return;
+      
+      try {
+        gameState.chests.forEach(chest => {
+          if (chest.opened) return; // Don't draw opened chests
+          
+          const x = chest.x - camera.x;
+          const y = chest.y - camera.y;
+          const size = 40;
+          
+          // Chest glow based on rarity
+          const glowColors = {
+            common: 'rgba(150, 150, 150, 0.3)',
+            rare: 'rgba(0, 112, 221, 0.4)',
+            epic: 'rgba(163, 53, 238, 0.5)',
+            legendary: 'rgba(255, 184, 0, 0.6)'
+          };
+          
+          const chestColors = {
+            common: { main: '#8B4513', accent: '#A0522D' },
+            rare: { main: '#0070DD', accent: '#4A9EFF' },
+            epic: { main: '#A335EE', accent: '#C864FF' },
+            legendary: { main: '#FFB800', accent: '#FFD700' }
+          };
+          
+          const glow = glowColors[chest.type] || glowColors.common;
+          const colors = chestColors[chest.type] || chestColors.common;
+          
+          // Animated glow
+          const pulseSize = 60 + Math.sin(Date.now() / 300) * 10;
+          const glowGradient = ctx.createRadialGradient(x, y, 10, x, y, pulseSize);
+          glowGradient.addColorStop(0, glow);
+          glowGradient.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = glowGradient;
+          ctx.fillRect(x - pulseSize, y - pulseSize, pulseSize * 2, pulseSize * 2);
+          
+          // Shadow
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+          ctx.fillRect(x - size/2 + 3, y + size/2 + 3, size, size/4);
+          
+          // Chest body
+          const bodyGradient = ctx.createLinearGradient(x - size/2, y - size/2, x + size/2, y + size/2);
+          bodyGradient.addColorStop(0, colors.main);
+          bodyGradient.addColorStop(1, colors.accent);
+          ctx.fillStyle = bodyGradient;
+          ctx.fillRect(x - size/2, y - size/3, size, size * 0.7);
+          
+          // Chest lid
+          ctx.fillStyle = colors.accent;
+          ctx.fillRect(x - size/2, y - size/2, size, size/4);
+          
+          // Gold latch
+          ctx.fillStyle = '#FFD700';
+          ctx.fillRect(x - 5, y - size/6, 10, 15);
+          
+          // Border
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x - size/2, y - size/2, size, size * 0.7);
+          
+          // Rarity indicator
+          if (chest.type !== 'common') {
+            ctx.fillStyle = '#FFF';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(chest.type.toUpperCase(), x, y + size/2 + 20);
+          }
+        });
+      } catch (error) {
+        console.error('Error drawing chests:', error);
+      }
+    }
+    
+    function checkChestProximity() {
+      if (!gameState || !gameState.chests || !players) return;
+      
+      const localPlayer = players.find(p => p.id === socket.id);
+      if (!localPlayer || !localPlayer.isAlive) return;
+      
+      // Find nearby unopened chests
+      const nearbyChest = gameState.chests.find(chest => {
+        if (chest.opened) return false;
+        const dist = Math.sqrt(
+          (localPlayer.x - chest.x) ** 2 + 
+          (localPlayer.y - chest.y) ** 2
+        );
+        return dist < 100; // Within 100 units
+      });
+      
+      // Show prompt if near chest
+      if (nearbyChest) {
+        ctx.save();
+        const x = nearbyChest.x - camera.x;
+        const y = nearbyChest.y - camera.y - 50;
+        
+        // Prompt background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(x - 60, y - 15, 120, 30);
+        
+        // Prompt text
+        ctx.fillStyle = '#FFF';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Press E to Open', x, y + 5);
+        
+        ctx.restore();
+        
+        // Store for key handler
+        window.nearbyChestId = nearbyChest.id;
+      } else {
+        window.nearbyChestId = null;
+      }
     }
     
     function drawBuildings() {
@@ -3088,6 +3213,14 @@
         if (data.vehicles) gameState.vehicles = data.vehicles;
         if (data.bullets) gameState.bullets = data.bullets;
         if (data.buildings) gameState.buildings = data.buildings;
+        if (data.chests) gameState.chests = data.chests; // Update chests!
+      });
+      
+      socket.on('chest-opened', (data) => {
+        console.log(`📦 Opened ${data.chestType} chest!`, data.loot);
+        // Show loot notification
+        const lootMsg = `Got ${data.loot.weapon.toUpperCase()} + ${data.loot.ammo} ammo!`;
+        showNotification(lootMsg, data.chestType);
       });
       
       socket.on('player-died', (data) => {
@@ -3099,6 +3232,33 @@
         document.getElementById('game-screen').style.display = 'none';
         showMenuScreen();
       });
+    }
+    
+    function showNotification(message, type) {
+      // Create notification element
+      const notif = document.createElement('div');
+      notif.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        padding: 15px 25px;
+        background: ${type === 'legendary' ? '#FFB800' : type === 'epic' ? '#A335EE' : type === 'rare' ? '#0070DD' : '#666'};
+        color: white;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 16px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease;
+      `;
+      notif.textContent = message;
+      document.body.appendChild(notif);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notif.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notif.remove(), 300);
+      }, 3000);
     }
     
     // ========== GOOGLE SIGN-IN ==========

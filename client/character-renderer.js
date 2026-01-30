@@ -199,6 +199,27 @@ const CharacterRenderer = {
     
     ctx.restore();
   },
+  
+  // Alias for render (used in game)
+  render(ctx, skinId, size) {
+    // This is called from the game with translate already applied
+    const skin = this.skins[skinId] || this.skins.default;
+    
+    // Shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+    ctx.beginPath();
+    ctx.ellipse(0, size * 0.55, size * 0.5, size * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw based on special type
+    if (skin.special === 'banana') {
+      this.drawBananaBot(ctx, skin, size);
+    } else if (skin.special === 'dog_ears') {
+      this.drawPugBot(ctx, skin, size);
+    } else {
+      this.drawStandardBot(ctx, skin, size);
+    }
+  },
 
   // Standard robot design
   drawStandardBot(ctx, skin, size) {

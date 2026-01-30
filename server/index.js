@@ -609,6 +609,7 @@ io.on('connection', (socket) => {
     game.weaponSpawns = generateWeaponSpawns(game.map);
     game.vehicles = generateVehicleSpawns(game.map, 10); // 10 vehicles per map
     game.buildings = generateBuildings(game.map); // ADD BUILDINGS!
+    game.chests = generateChests(game.map); // ADD CHESTS!
     game.activeEvents = getActiveEvents();
     
     io.to(gameId).emit('game-started', {
@@ -620,6 +621,7 @@ io.on('connection', (socket) => {
       weaponSpawns: game.weaponSpawns,
       vehicles: game.vehicles,
       buildings: game.buildings, // SEND BUILDINGS!
+      chests: game.chests, // SEND CHESTS!
       activeEvents: game.activeEvents
     });
     
@@ -1148,6 +1150,49 @@ io.on('connection', (socket) => {
     player.ammo -= 1;
   });
   
+  // ========== CHEST INTERACTION ==========
+  socket.on('open-chest', (data) => {
+    const gameId = playerGames.get(socket.id);
+    if (!gameId) return;
+    
+    const game = games.get(gameId);
+    if (!game || game.state !== 'playing') return;
+    
+    const player = game.players.get(socket.id);
+    if (!player || !player.isAlive) return;
+    
+    // Find the chest
+    const chest = game.chests?.find(c => c.id === data.chestId && !c.opened);
+    if (!chest) return;
+    
+    // Check if player is close enough
+    const dist = Math.sqrt((player.x - chest.x) ** 2 + (player.y - chest.y) ** 2);
+    if (dist > 100) return; // Must be within 100 units
+    
+    // Mark chest as opened
+    chest.opened = true;
+    
+    // Give loot to player
+    player.weapon = chest.loot.weapon;
+    player.ammo += chest.loot.ammo;
+    player.health = Math.min(player.maxHealth, player.health + chest.loot.health);
+    player.shield = Math.min(player.maxShield, player.shield + chest.loot.shield);
+    
+    if (!player.materials) player.materials = { wood: 0, brick: 0, metal: 0 };
+    player.materials.wood += chest.loot.materials.wood;
+    player.materials.brick += chest.loot.materials.brick;
+    player.materials.metal += chest.loot.materials.metal;
+    
+    // Notify player
+    io.to(socket.id).emit('chest-opened', {
+      chestId: chest.id,
+      loot: chest.loot,
+      chestType: chest.type
+    });
+    
+    console.log(`📦 ${player.username} opened ${chest.type} chest!`);
+  });
+  
   // ========== DISCONNECT ==========
   socket.on('disconnect', async () => {
     console.log(`👋 Player disconnected: ${socket.id}`);
@@ -1424,6 +1469,7 @@ function startGameLoop(gameId) {
       powerups: game.powerups,
       weaponSpawns: game.weaponSpawns,
       vehicles: game.vehicles,
+      chests: game.chests,
       stormRadius: game.stormRadius,
       stormCenter: game.stormCenter,
       stormPhase: game.stormPhase,
@@ -1646,6 +1692,63 @@ function generateBuildings(map) {
   }
   
   return buildings;
+}
+
+function generateChests(map) {
+  const chests = [];
+  const chestCount = Math.floor(map.size / 100); // 1 chest per 100 units
+  
+  for (let i = 0; i < chestCount; i++) {
+    const rarity = Math.random();
+    let chestType = 'common';
+    let lootQuality = 1;
+    
+    if (rarity > 0.95) {
+      chestType = 'legendary';
+      lootQuality = 4;
+    } else if (rarity > 0.85) {
+      chestType = 'epic';
+      lootQuality = 3;
+    } else if (rarity > 0.7) {
+      chestType = 'rare';
+      lootQuality = 2;
+    }
+    
+    chests.push({
+      id: uuidv4(),
+      type: chestType,
+      x: Math.random() * (map.size - 400) + 200,
+      y: Math.random() * (map.size - 400) + 200,
+      opened: false,
+      lootQuality: lootQuality,
+      // Chest contains random loot
+      loot: {
+        weapon: generateChestWeapon(lootQuality),
+        ammo: 30 + (lootQuality * 20),
+        health: lootQuality >= 2 ? 50 : 0,
+        shield: lootQuality >= 3 ? 50 : 0,
+        materials: {
+          wood: 50 * lootQuality,
+          brick: 30 * lootQuality,
+          metal: 20 * lootQuality
+        }
+      }
+    });
+  }
+  
+  return chests;
+}
+
+function generateChestWeapon(quality) {
+  const weaponsByQuality = {
+    1: ['pistol', 'smg'],
+    2: ['rifle', 'shotgun'],
+    3: ['sniper', 'minigun'],
+    4: ['rocket_launcher', 'grenade_launcher']
+  };
+  
+  const options = weaponsByQuality[quality] || ['pistol'];
+  return options[Math.floor(Math.random() * options.length)];
 }
 
 function filterProfanity(text) {
