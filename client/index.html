@@ -1390,6 +1390,7 @@
       
       socket.on('connect', () => {
         console.log('Connected to server');
+        setupGameSockets();
         showMenuScreen();
         if (!isGuest) {
           loadFriends();
@@ -2365,6 +2366,374 @@
         console.error('Bundle purchase error:', error);
         alert('❌ Error purchasing bundle');
       }
+    }
+
+    // ========== GAME VARIABLES ==========
+    let canvas, ctx;
+    let gameState = null;
+    let myPlayer = null;
+    let players = [];
+    let keys = {};
+    let mouseX = 0, mouseY = 0;
+    let camera = { x: 0, y: 0 };
+    
+    // Resize canvas when window resizes
+    window.addEventListener('resize', () => {
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+    
+    // ========== GAME INITIALIZATION ==========
+    function initGame(data) {
+      console.log('Initializing game...', data);
+      
+      // Setup canvas
+      canvas = document.getElementById('game-canvas');
+      ctx = canvas.getContext('2d');
+      
+      // Set canvas size
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      // Store game state
+      gameState = data;
+      
+      // Setup controls
+      setupGameControls();
+      
+      // Start render loop
+      requestAnimationFrame(gameLoop);
+      
+      console.log('✅ Game initialized!');
+    }
+    
+    function setupGameControls() {
+      // Keyboard controls
+      window.addEventListener('keydown', (e) => {
+        keys[e.key.toLowerCase()] = true;
+        
+        // Send movement to server
+        if (['w', 'a', 's', 'd'].includes(e.key.toLowerCase())) {
+          socket.emit('player-move', {
+            keys: keys
+          });
+        }
+      });
+      
+      window.addEventListener('keyup', (e) => {
+        keys[e.key.toLowerCase()] = false;
+      });
+      
+      // Mouse controls
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+      });
+      
+      canvas.addEventListener('click', (e) => {
+        // Shoot
+        socket.emit('player-shoot', {
+          mouseX: mouseX + camera.x,
+          mouseY: mouseY + camera.y
+        });
+      });
+    }
+    
+    // ========== GAME LOOP ==========
+    function gameLoop() {
+      if (!canvas || !ctx) return;
+      
+      // Clear canvas
+      ctx.fillStyle = '#87CEEB'; // Sky blue
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw grid/ground
+      drawGround();
+      
+      // Draw game elements
+      if (gameState) {
+        drawStorm();
+        drawTriviaStations();
+        drawPowerups();
+        drawWeapons();
+        drawVehicles();
+        drawPlayers();
+        drawUI();
+      }
+      
+      // Continue loop
+      requestAnimationFrame(gameLoop);
+    }
+    
+    function drawGround() {
+      if (!gameState) return;
+      
+      ctx.fillStyle = '#90EE90'; // Light green
+      ctx.fillRect(-camera.x, -camera.y, gameState.map.size, gameState.map.size);
+      
+      // Draw grid
+      ctx.strokeStyle = '#7CCD7C';
+      ctx.lineWidth = 1;
+      
+      const gridSize = 100;
+      for (let x = 0; x < gameState.map.size; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x - camera.x, -camera.y);
+        ctx.lineTo(x - camera.x, gameState.map.size - camera.y);
+        ctx.stroke();
+      }
+      
+      for (let y = 0; y < gameState.map.size; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(-camera.x, y - camera.y);
+        ctx.lineTo(gameState.map.size - camera.x, y - camera.y);
+        ctx.stroke();
+      }
+    }
+    
+    function drawStorm() {
+      if (!gameState || !gameState.stormRadius) return;
+      
+      // Draw storm circle (danger zone)
+      ctx.strokeStyle = '#8B00FF';
+      ctx.lineWidth = 5;
+      ctx.setLineDash([10, 5]);
+      ctx.beginPath();
+      ctx.arc(
+        gameState.stormCenter.x - camera.x,
+        gameState.stormCenter.y - camera.y,
+        gameState.stormRadius,
+        0,
+        Math.PI * 2
+      );
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    
+    function drawTriviaStations() {
+      if (!gameState || !gameState.triviaStations) return;
+      
+      gameState.triviaStations.forEach(station => {
+        if (station.answered) return;
+        
+        ctx.fillStyle = '#FFD700';
+        ctx.strokeStyle = '#FFA500';
+        ctx.lineWidth = 3;
+        
+        ctx.beginPath();
+        ctx.arc(
+          station.x - camera.x,
+          station.y - camera.y,
+          20,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.stroke();
+        
+        // Draw "?" symbol
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('?', station.x - camera.x, station.y - camera.y);
+      });
+    }
+    
+    function drawPowerups() {
+      if (!gameState || !gameState.powerups) return;
+      
+      gameState.powerups.forEach(powerup => {
+        if (powerup.collected) return;
+        
+        const colors = {
+          health: '#FF0000',
+          shield: '#00BFFF',
+          speed: '#FFFF00',
+          damage: '#FF6347',
+          invincibility: '#9370DB'
+        };
+        
+        ctx.fillStyle = colors[powerup.type] || '#FFF';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        
+        ctx.beginPath();
+        ctx.arc(
+          powerup.x - camera.x,
+          powerup.y - camera.y,
+          15,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.stroke();
+      });
+    }
+    
+    function drawWeapons() {
+      if (!gameState || !gameState.weaponSpawns) return;
+      
+      gameState.weaponSpawns.forEach(weapon => {
+        if (weapon.collected) return;
+        
+        ctx.fillStyle = '#C0C0C0';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        
+        const x = weapon.x - camera.x;
+        const y = weapon.y - camera.y;
+        
+        // Draw weapon box
+        ctx.fillRect(x - 10, y - 10, 20, 20);
+        ctx.strokeRect(x - 10, y - 10, 20, 20);
+      });
+    }
+    
+    function drawVehicles() {
+      if (!gameState || !gameState.vehicles) return;
+      
+      gameState.vehicles.forEach(vehicle => {
+        const x = vehicle.x - camera.x;
+        const y = vehicle.y - camera.y;
+        
+        // Draw vehicle
+        ctx.fillStyle = vehicle.occupied ? '#FF6347' : '#4169E1';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        
+        ctx.fillRect(x - 25, y - 15, 50, 30);
+        ctx.strokeRect(x - 25, y - 15, 50, 30);
+        
+        // Draw wheels
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(x - 15, y + 15, 5, 0, Math.PI * 2);
+        ctx.arc(x + 15, y + 15, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+    
+    function drawPlayers() {
+      if (!players || players.length === 0) return;
+      
+      players.forEach(player => {
+        if (!player.isAlive) return;
+        
+        const x = player.x - camera.x;
+        const y = player.y - camera.y;
+        
+        // Draw player circle
+        ctx.fillStyle = player.id === socket.id ? '#00FF00' : '#FF0000';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        
+        // Draw username
+        ctx.fillStyle = '#FFF';
+        ctx.strokeStyle = '#000';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 3;
+        ctx.strokeText(player.username, x, y - 30);
+        ctx.fillText(player.username, x, y - 30);
+        
+        // Draw health bar
+        const barWidth = 40;
+        const barHeight = 5;
+        const healthPercent = player.health / player.maxHealth;
+        
+        ctx.fillStyle = '#FF0000';
+        ctx.fillRect(x - barWidth/2, y - 40, barWidth, barHeight);
+        
+        ctx.fillStyle = '#00FF00';
+        ctx.fillRect(x - barWidth/2, y - 40, barWidth * healthPercent, barHeight);
+        
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x - barWidth/2, y - 40, barWidth, barHeight);
+      });
+      
+      // Update camera to follow local player
+      const localPlayer = players.find(p => p.id === socket.id);
+      if (localPlayer) {
+        camera.x = localPlayer.x - canvas.width / 2;
+        camera.y = localPlayer.y - canvas.height / 2;
+      }
+    }
+    
+    function drawUI() {
+      if (!myPlayer) return;
+      
+      const player = players.find(p => p.id === socket.id) || myPlayer;
+      
+      // Draw HUD background
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(10, 10, 250, 120);
+      
+      // Draw stats
+      ctx.fillStyle = '#FFF';
+      ctx.font = 'bold 16px Arial';
+      ctx.textAlign = 'left';
+      
+      ctx.fillText(`Health: ${player.health}/${player.maxHealth}`, 20, 35);
+      ctx.fillText(`Shield: ${player.shield}/${player.maxShield}`, 20, 60);
+      ctx.fillText(`Ammo: ${player.ammo}`, 20, 85);
+      ctx.fillText(`Weapon: ${player.weapon}`, 20, 110);
+      
+      // Draw kill count
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(canvas.width - 160, 10, 150, 50);
+      
+      ctx.fillStyle = '#FFF';
+      ctx.textAlign = 'right';
+      ctx.fillText(`Kills: ${player.kills}`, canvas.width - 20, 40);
+      
+      // Draw controls hint
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(10, canvas.height - 60, 200, 50);
+      
+      ctx.fillStyle = '#FFF';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('WASD - Move', 20, canvas.height - 35);
+      ctx.fillText('Click - Shoot', 20, canvas.height - 20);
+    }
+    
+    // ========== SOCKET LISTENERS FOR GAME ==========
+    function setupGameSockets() {
+      socket.on('game-update', (data) => {
+        // Update players
+        if (data.players) {
+          players = data.players;
+          myPlayer = players.find(p => p.id === socket.id);
+        }
+        
+        // Update game state
+        if (data.stormRadius !== undefined) gameState.stormRadius = data.stormRadius;
+        if (data.stormCenter) gameState.stormCenter = data.stormCenter;
+        if (data.triviaStations) gameState.triviaStations = data.triviaStations;
+        if (data.powerups) gameState.powerups = data.powerups;
+        if (data.weaponSpawns) gameState.weaponSpawns = data.weaponSpawns;
+        if (data.vehicles) gameState.vehicles = data.vehicles;
+      });
+      
+      socket.on('player-died', (data) => {
+        alert(`💀 You were eliminated! Killed by: ${data.killerName}`);
+      });
+      
+      socket.on('game-ended', (data) => {
+        alert(`🎉 Game Over! Winner: ${data.winner}`);
+        document.getElementById('game-screen').style.display = 'none';
+        showMenuScreen();
+      });
     }
 
     function createGame() {
