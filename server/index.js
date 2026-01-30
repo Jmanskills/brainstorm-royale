@@ -1066,6 +1066,82 @@ io.on('connection', (socket) => {
     }
   });
   
+  // ========== PLAYER MOVEMENT ==========
+  socket.on('player-input', (data) => {
+    const gameId = playerGames.get(socket.id);
+    if (!gameId) return;
+    
+    const game = games.get(gameId);
+    if (!game || game.state !== 'playing') return;
+    
+    const player = game.players.get(socket.id);
+    if (!player || !player.isAlive) return;
+    
+    // Calculate movement
+    const speed = 5;
+    let dx = 0;
+    let dy = 0;
+    
+    if (data.up) dy -= speed;
+    if (data.down) dy += speed;
+    if (data.left) dx -= speed;
+    if (data.right) dx += speed;
+    
+    // Normalize diagonal movement
+    if (dx !== 0 && dy !== 0) {
+      const magnitude = Math.sqrt(dx * dx + dy * dy);
+      dx = (dx / magnitude) * speed;
+      dy = (dy / magnitude) * speed;
+    }
+    
+    // Update position
+    player.x += dx;
+    player.y += dy;
+    
+    // Keep within map bounds
+    const mapSize = game.map.size;
+    player.x = Math.max(0, Math.min(mapSize, player.x));
+    player.y = Math.max(0, Math.min(mapSize, player.y));
+    
+    // Store mouse position for shooting
+    if (data.mouseX !== undefined) player.mouseX = data.mouseX;
+    if (data.mouseY !== undefined) player.mouseY = data.mouseY;
+  });
+  
+  socket.on('player-shoot', (data) => {
+    const gameId = playerGames.get(socket.id);
+    if (!gameId) return;
+    
+    const game = games.get(gameId);
+    if (!game || game.state !== 'playing') return;
+    
+    const player = game.players.get(socket.id);
+    if (!player || !player.isAlive || player.ammo <= 0) return;
+    
+    // Calculate direction
+    const dx = data.targetX - player.x;
+    const dy = data.targetY - player.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    
+    if (dist === 0) return;
+    
+    // Create bullet
+    const bullet = {
+      id: uuidv4(),
+      x: player.x,
+      y: player.y,
+      vx: dx / dist,
+      vy: dy / dist,
+      weapon: player.weapon,
+      damage: WEAPONS[player.weapon].damage,
+      ownerId: socket.id,
+      ownerName: player.username
+    };
+    
+    game.bullets.push(bullet);
+    player.ammo -= 1;
+  });
+  
   // ========== DISCONNECT ==========
   socket.on('disconnect', async () => {
     console.log(`👋 Player disconnected: ${socket.id}`);
