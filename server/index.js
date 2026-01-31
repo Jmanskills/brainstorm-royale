@@ -753,36 +753,44 @@ io.on('connection', (socket) => {
     
     // Update bus position every tick
     game.busInterval = setInterval(() => {
-      if (!game || !game.battleBus || !game.battleBus.active) {
-        if (game.busInterval) clearInterval(game.busInterval);
+      if (!game || !game.battleBus || !game.battleBus.active || !game.map) {
+        if (game && game.busInterval) clearInterval(game.busInterval);
         return;
       }
       
-      // Move bus forward
-      game.battleBus.x += Math.cos(game.battleBus.angle) * game.battleBus.speed;
-      game.battleBus.y += Math.sin(game.battleBus.angle) * game.battleBus.speed;
-      
-      // End bus after duration or if it leaves map
-      const timeElapsed = Date.now() - game.battleBus.startTime;
-      const outOfBounds = game.battleBus.x < -500 || game.battleBus.x > game.map.size + 500 ||
-                          game.battleBus.y < -500 || game.battleBus.y > game.map.size + 500;
-      
-      if (timeElapsed > game.battleBus.duration || outOfBounds) {
-        game.battleBus.active = false;
-        clearInterval(game.busInterval);
+      try {
+        // Move bus forward
+        game.battleBus.x += Math.cos(game.battleBus.angle) * game.battleBus.speed;
+        game.battleBus.y += Math.sin(game.battleBus.angle) * game.battleBus.speed;
         
-        // Auto-drop remaining players
-        game.players.forEach(p => {
-          if (p.inBus && p.isAlive) {
-            p.inBus = false;
-            p.falling = true;
-            p.jumpTime = Date.now();
-            p.x = game.battleBus.x;
-            p.y = game.battleBus.y;
+        // End bus after duration or if it leaves map
+        const timeElapsed = Date.now() - game.battleBus.startTime;
+        const mapSize = game.map.size || 6000;
+        const outOfBounds = game.battleBus.x < -500 || game.battleBus.x > mapSize + 500 ||
+                            game.battleBus.y < -500 || game.battleBus.y > mapSize + 500;
+        
+        if (timeElapsed > game.battleBus.duration || outOfBounds) {
+          game.battleBus.active = false;
+          clearInterval(game.busInterval);
+          
+          // Auto-drop remaining players
+          if (game.players) {
+            game.players.forEach(p => {
+              if (p.inBus && p.isAlive) {
+                p.inBus = false;
+                p.falling = true;
+                p.jumpTime = Date.now();
+                p.x = game.battleBus.x;
+                p.y = game.battleBus.y;
+              }
+            });
           }
-        });
-        
-        console.log('🚌 Battle bus finished - auto-dropped remaining players');
+          
+          console.log('🚌 Battle bus finished - auto-dropped remaining players');
+        }
+      } catch (error) {
+        console.error('❌ Battle bus error:', error);
+        if (game && game.busInterval) clearInterval(game.busInterval);
       }
     }, 1000/60);
     
@@ -1705,6 +1713,12 @@ function startGameLoop(gameId) {
       game.state = 'ended';
       clearInterval(interval);
       
+      // Clean up battle bus interval
+      if (game.busInterval) {
+        clearInterval(game.busInterval);
+        game.busInterval = null;
+      }
+      
       const winner = alivePlayers[0] || null;
       
       // Save game results to database
@@ -1732,47 +1746,50 @@ function startGameLoop(gameId) {
     }
     
     // ========== FALLING/GLIDER PHYSICS ==========
-    game.players.forEach(player => {
-      if (player.falling && player.isAlive) {
-        // Accelerate fall speed (gravity)
-        player.fallSpeed = Math.min(15, (player.fallSpeed || 0) + 0.5);
-        
-        // Auto-open glider after 2 seconds OR when falling fast
-        const timeSinceJump = Date.now() - (player.jumpTime || 0);
-        if (!player.gliderOpen && (timeSinceJump > 2000 || player.fallSpeed > 10)) {
-          player.gliderOpen = true;
-          player.fallSpeed = 3; // Slow to glider speed
-        }
-        
-        // Apply fall movement
-        if (player.gliderOpen) {
-          // Slow gliding fall
-          player.y += 3;
-          // Allow slight horizontal control
-          if (player.mouseX && player.mouseY) {
-            const dx = (player.mouseX - player.x) / 100;
-            const dy = (player.mouseY - player.y) / 100;
-            player.x += Math.max(-2, Math.min(2, dx));
-            player.y += Math.max(-1, Math.min(1, dy));
+    if (game && game.players && game.map) {
+      game.players.forEach(player => {
+        if (player.falling && player.isAlive) {
+          // Accelerate fall speed (gravity)
+          player.fallSpeed = Math.min(15, (player.fallSpeed || 0) + 0.5);
+          
+          // Auto-open glider after 2 seconds OR when falling fast
+          const timeSinceJump = Date.now() - (player.jumpTime || 0);
+          if (!player.gliderOpen && (timeSinceJump > 2000 || player.fallSpeed > 10)) {
+            player.gliderOpen = true;
+            player.fallSpeed = 3; // Slow to glider speed
           }
-        } else {
-          // Fast free fall
-          player.y += player.fallSpeed;
+          
+          // Apply fall movement
+          if (player.gliderOpen) {
+            // Slow gliding fall
+            player.y += 3;
+            // Allow slight horizontal control
+            if (player.mouseX && player.mouseY) {
+              const dx = (player.mouseX - player.x) / 100;
+              const dy = (player.mouseY - player.y) / 100;
+              player.x += Math.max(-2, Math.min(2, dx));
+              player.y += Math.max(-1, Math.min(1, dy));
+            }
+          } else {
+            // Fast free fall
+            player.y += player.fallSpeed;
+          }
+          
+          // Land on ground (map bottom)
+          const mapSize = game.map.size || 6000;
+          if (player.y >= mapSize - 100) {
+            player.y = mapSize - 100;
+            player.falling = false;
+            player.gliderOpen = false;
+            player.fallSpeed = 0;
+            console.log(`🎯 ${player.username} landed at (${Math.floor(player.x)}, ${Math.floor(player.y)})`);
+          }
+          
+          // Keep within map bounds horizontally
+          player.x = Math.max(0, Math.min(mapSize, player.x));
         }
-        
-        // Land on ground (map bottom)
-        if (player.y >= game.map.size - 100) {
-          player.y = game.map.size - 100;
-          player.falling = false;
-          player.gliderOpen = false;
-          player.fallSpeed = 0;
-          console.log(`🎯 ${player.username} landed at (${Math.floor(player.x)}, ${Math.floor(player.y)})`);
-        }
-        
-        // Keep within map bounds horizontally
-        player.x = Math.max(0, Math.min(game.map.size, player.x));
-      }
-    });
+      });
+    }
     
     // Broadcast game state
     io.to(gameId).emit('game-update', {
