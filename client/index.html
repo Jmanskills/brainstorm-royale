@@ -2958,56 +2958,74 @@
     }
     
     function drawPOILabels() {
-      if (!gameState || !gameState.map || !gameState.map.pois) return;
+      if (!gameState || !gameState.map) return;
       
-      gameState.map.pois.forEach(poi => {
-        const x = poi.x - camera.x;
-        const y = poi.y - camera.y;
-        
-        // Only draw if POI center is roughly on screen
-        if (x < -300 || x > canvas.width + 300 || y < -300 || y > canvas.height + 300) return;
-        
-        // POI area circle (subtle)
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([15, 15]);
-        ctx.beginPath();
-        ctx.arc(x, y, poi.size / 2, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        
-        // POI name (Fortnite style!)
-        ctx.save();
-        
-        // Shadow
-        ctx.font = 'bold 30px Arial';
-        ctx.textAlign = 'center';
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 8;
-        ctx.strokeText(poi.name, x, y - poi.size/2 - 40);
-        
-        // White text
-        ctx.fillStyle = '#FFF';
-        ctx.shadowColor = '#000';
-        ctx.shadowBlur = 10;
-        ctx.fillText(poi.name, x, y - poi.size/2 - 40);
-        ctx.shadowBlur = 0;
-        
-        // Icon
-        const icons = {
-          urban: '🏘️', mall: '🏬', castle: '🏰',
-          park: '🌳', forest: '🌲', military: '⚔️', island: '🏝️'
-        };
-        const icon = icons[poi.type] || '📍';
-        
-        ctx.font = '36px Arial';
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 4;
-        ctx.strokeText(icon, x, y - poi.size/2 - 75);
-        ctx.fillText(icon, x, y - poi.size/2 - 75);
-        
-        ctx.restore();
-      });
+      // Check if POIs exist and is an array
+      if (!gameState.map.pois || !Array.isArray(gameState.map.pois)) {
+        return; // No POIs to draw
+      }
+      
+      try {
+        gameState.map.pois.forEach(poi => {
+          // Validate POI data
+          if (!poi || typeof poi.x !== 'number' || typeof poi.y !== 'number') {
+            console.warn('Invalid POI data:', poi);
+            return;
+          }
+          
+          const x = poi.x - camera.x;
+          const y = poi.y - camera.y;
+          
+          // Only draw if POI center is roughly on screen
+          if (x < -300 || x > canvas.width + 300 || y < -300 || y > canvas.height + 300) return;
+          
+          const poiSize = poi.size || 300; // Default size if missing
+          
+          // POI area circle (subtle)
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([15, 15]);
+          ctx.beginPath();
+          ctx.arc(x, y, poiSize / 2, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          
+          // POI name (Fortnite style!)
+          ctx.save();
+          
+          // Shadow
+          ctx.font = 'bold 30px Arial';
+          ctx.textAlign = 'center';
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 8;
+          const poiName = poi.name || 'Unknown Location';
+          ctx.strokeText(poiName, x, y - poiSize/2 - 40);
+          
+          // White text
+          ctx.fillStyle = '#FFF';
+          ctx.shadowColor = '#000';
+          ctx.shadowBlur = 10;
+          ctx.fillText(poiName, x, y - poiSize/2 - 40);
+          ctx.shadowBlur = 0;
+          
+          // Icon
+          const icons = {
+            urban: '🏘️', mall: '🏬', castle: '🏰',
+            park: '🌳', forest: '🌲', military: '⚔️', island: '🏝️'
+          };
+          const icon = icons[poi.type] || '📍';
+          
+          ctx.font = '36px Arial';
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 4;
+          ctx.strokeText(icon, x, y - poiSize/2 - 75);
+          ctx.fillText(icon, x, y - poiSize/2 - 75);
+          
+          ctx.restore();
+        });
+      } catch (error) {
+        console.error('Error drawing POI labels:', error);
+      }
     }
     
     function drawStorm() {
@@ -3429,7 +3447,16 @@
     
     function loadSkinSelector() {
       const skinGrid = document.getElementById('skin-grid');
-      if (!skinGrid || typeof CharacterRenderer === 'undefined') return;
+      if (!skinGrid) {
+        console.warn('Skin grid not found');
+        return;
+      }
+      
+      if (typeof CharacterRenderer === 'undefined') {
+        console.warn('CharacterRenderer not loaded yet, retrying in 500ms...');
+        setTimeout(loadSkinSelector, 500);
+        return;
+      }
       
       const popularSkins = ['default', 'peely', 'pug', 'cyber_ninja', 'galaxy', 'lava', 'ice', 'golden'];
       const ownedSkins = currentUser?.inventory?.ownedSkins || ['default'];
@@ -3438,7 +3465,10 @@
       
       popularSkins.forEach(skinId => {
         const skin = CharacterRenderer.skins[skinId];
-        if (!skin) return;
+        if (!skin) {
+          console.warn(`Skin ${skinId} not found in CharacterRenderer`);
+          return;
+        }
         
         const isOwned = ownedSkins.includes(skinId);
         const isSelected = skinId === selectedSkin;
@@ -3450,7 +3480,7 @@
         
         // Only allow selecting owned skins
         if (isOwned) {
-          card.onclick = () => selectSkin(skinId);
+          card.onclick = (e) => selectSkin(skinId, e);
         } else {
           card.onclick = () => {
             alert('🔒 This skin is locked! Purchase it from the shop.');
@@ -3463,6 +3493,7 @@
         preview.height = 60;
         
         const ctx = preview.getContext('2d');
+        if (!ctx) return;
         
         // Darken if locked
         if (!isOwned) {
@@ -3475,7 +3506,13 @@
         if (!isOwned) {
           ctx.globalAlpha = 0.3; // Dim locked skins
         }
-        CharacterRenderer.render(ctx, skinId, 20);
+        
+        try {
+          CharacterRenderer.render(ctx, skinId, 20);
+        } catch (error) {
+          console.error(`Error rendering skin ${skinId}:`, error);
+        }
+        
         ctx.restore();
         
         // Lock icon
@@ -3499,7 +3536,7 @@
       });
     }
     
-    function selectSkin(skinId) {
+    function selectSkin(skinId, event) {
       const ownedSkins = currentUser?.inventory?.ownedSkins || ['default'];
       
       // Check if owned
@@ -3510,11 +3547,15 @@
       
       selectedSkin = skinId;
       
-      // Update UI
+      // Update UI - remove selected from all cards
       document.querySelectorAll('.skin-card').forEach(card => {
         card.classList.remove('selected');
       });
-      event.currentTarget.classList.add('selected');
+      
+      // Add selected to clicked card (if event provided)
+      if (event && event.currentTarget) {
+        event.currentTarget.classList.add('selected');
+      }
       
       // Save to current user
       if (currentUser && currentUser.inventory) {

@@ -830,11 +830,16 @@ io.on('connection', (socket) => {
     const player = game.players.get(socket.id);
     if (!player || !player.isAlive || !player.buildMode) return;
     
+    // Initialize materials if not present (defensive programming)
+    if (!player.materials) {
+      player.materials = { wood: 100, brick: 100, metal: 100 };
+    }
+    
     const material = player.currentMaterial;
     const buildType = player.currentBuildType;
     
     // Check if player has materials
-    if (player.materials[material] < 10) {
+    if (!player.materials[material] || player.materials[material] < 10) {
       socket.emit('error', { message: 'Not enough materials!' });
       return;
     }
