@@ -62,76 +62,133 @@ app.get('/api/health', (req, res) => {
 const MAPS = {
   classic: {
     name: 'Brain Island',
-    size: 4000,  // BIGGER MAP!
+    size: 5000,  // EVEN BIGGER MAP for more POIs!
     playerSize: 30,
     theme: 'fortnite',
-    triviaStations: 25,
-    powerupSpawns: 35,
-    weaponSpawns: 50,
-    buildings: 80, // More buildings!
-    pois: [ // FORTNITE-STYLE LOCATIONS!
+    triviaStations: 30,
+    powerupSpawns: 45,
+    weaponSpawns: 60,
+    buildings: 150, // WAY more buildings!
+    pois: [ // 12 FORTNITE-STYLE LOCATIONS!
       { 
-        name: 'Brainy Burbs', 
-        x: 1000, 
-        y: 1000, 
+        name: '🏙️ Brainy Burbs', // Like Tilted Towers!
+        x: 2500, 
+        y: 2500, 
+        size: 600, 
+        buildings: 30,
+        chests: 20,
+        type: 'urban',
+        description: 'Dense city center with tall buildings'
+      },
+      { 
+        name: '🏰 Knowledge Keep', 
+        x: 4200, 
+        y: 1200, 
+        size: 450, 
+        buildings: 15,
+        chests: 12,
+        type: 'castle',
+        description: 'Medieval castle with towers'
+      },
+      { 
+        name: '🏬 Memory Mall', // Like Retail Row!
+        x: 3800, 
+        y: 3500, 
+        size: 550, 
+        buildings: 25,
+        chests: 18,
+        type: 'mall',
+        description: 'Shopping district with stores'
+      },
+      { 
+        name: '🏡 Pleasant Plaza', // Like Pleasant Park!
+        x: 800, 
+        y: 1200, 
+        size: 500, 
+        buildings: 20,
+        chests: 14,
+        type: 'neighborhood',
+        description: 'Suburban neighborhood'
+      },
+      { 
+        name: '🌲 Genius Grove', 
+        x: 1500, 
+        y: 4000, 
+        size: 450, 
+        buildings: 12,
+        chests: 10,
+        type: 'forest',
+        description: 'Forest cabins and campsites'
+      },
+      { 
+        name: '⚔️ Think Tank', // Like Military base!
+        x: 600, 
+        y: 600, 
         size: 400, 
         buildings: 15,
-        chests: 8,
-        type: 'urban'
+        chests: 12,
+        type: 'military',
+        description: 'Military compound'
       },
       { 
-        name: 'Knowledge Keep', 
-        x: 3000, 
-        y: 1000, 
+        name: '🏖️ Salty Shores', // Like Salty Springs!
+        x: 4200, 
+        y: 4400, 
         size: 350, 
         buildings: 12,
-        chests: 6,
-        type: 'castle'
+        chests: 9,
+        type: 'beach',
+        description: 'Coastal town'
       },
       { 
-        name: 'IQ Island', 
-        x: 2000, 
+        name: '🏭 Factory Frenzy', // Like Steamy Stacks!
+        x: 1800, 
+        y: 800, 
+        size: 500, 
+        buildings: 18,
+        chests: 15,
+        type: 'industrial',
+        description: 'Industrial zone with warehouses'
+      },
+      { 
+        name: '🛣️ Lonely Lodge', 
+        x: 4500, 
         y: 2000, 
         size: 300, 
         buildings: 8,
-        chests: 5,
-        type: 'island'
+        chests: 7,
+        type: 'lodge',
+        description: 'Remote cabins'
       },
       { 
-        name: 'Memory Mall', 
-        x: 3200, 
+        name: '🎭 Theater Town',
+        x: 1200, 
         y: 2800, 
-        size: 500, 
-        buildings: 20,
-        chests: 10,
-        type: 'mall'
+        size: 400, 
+        buildings: 14,
+        chests: 11,
+        type: 'entertainment',
+        description: 'Entertainment district'
       },
       { 
-        name: 'Puzzle Park', 
-        x: 800, 
-        y: 2500, 
+        name: '🏥 Remedy Ridge',
+        x: 3000, 
+        y: 800, 
         size: 350, 
         buildings: 10,
-        chests: 5,
-        type: 'park'
+        chests: 10,
+        type: 'hospital',
+        description: 'Medical center'
       },
       { 
-        name: 'Genius Grove', 
-        x: 2000, 
-        y: 3500, 
-        size: 400, 
-        buildings: 12,
-        chests: 7,
-        type: 'forest'
-      },
-      { 
-        name: 'Think Tank', 
-        x: 500, 
-        y: 500, 
-        size: 300, 
-        buildings: 8,
-        chests: 4,
-        type: 'military'
+        name: '🎢 Puzzle Park', // Like an amusement park!
+        x: 3200, 
+        y: 1800, 
+        size: 450, 
+        buildings: 16,
+        chests: 13,
+        type: 'park',
+        description: 'Amusement park with rides'
       }
     ]
   },
@@ -674,7 +731,7 @@ io.on('connection', (socket) => {
     game.weaponSpawns = generateWeaponSpawns(game.map);
     game.vehicles = generateVehicleSpawns(game.map, 10); // 10 vehicles per map
     game.buildings = generateBuildings(game.map); // ADD BUILDINGS!
-    game.chests = generateChests(game.map); // ADD CHESTS!
+    game.chests = generateChests(game.map, game.buildings); // ADD CHESTS INSIDE BUILDINGS!
     game.activeEvents = getActiveEvents();
     
     io.to(gameId).emit('game-started', {
@@ -1263,6 +1320,65 @@ io.on('connection', (socket) => {
     console.log(`📦 ${player.username} opened ${chest.type} chest!`);
   });
   
+  // ========== DOOR INTERACTION ==========
+  socket.on('toggle-door', (data) => {
+    const gameId = playerGames.get(socket.id);
+    if (!gameId) return;
+    
+    const game = games.get(gameId);
+    if (!game || game.state !== 'playing') return;
+    
+    const player = game.players.get(socket.id);
+    if (!player || !player.isAlive) return;
+    
+    // Find the building and door
+    let foundDoor = null;
+    let foundBuilding = null;
+    
+    game.buildings.forEach(building => {
+      if (!building.doors) return;
+      
+      const door = building.doors.find(d => d.id === data.doorId);
+      if (door) {
+        foundDoor = door;
+        foundBuilding = building;
+      }
+    });
+    
+    if (!foundDoor) return;
+    
+    // Check if player is close enough (within 80 units)
+    const dist = Math.sqrt(
+      (player.x - foundDoor.worldX) ** 2 + 
+      (player.y - foundDoor.worldY) ** 2
+    );
+    
+    if (dist > 80) return;
+    
+    // Toggle door state
+    foundDoor.open = !foundDoor.open;
+    
+    console.log(`🚪 ${player.username} ${foundDoor.open ? 'opened' : 'closed'} door in ${foundBuilding.name}`);
+  });
+  
+  // ========== STAIRS INTERACTION ==========
+  socket.on('use-stairs', (data) => {
+    const gameId = playerGames.get(socket.id);
+    if (!gameId) return;
+    
+    const game = games.get(gameId);
+    if (!game || game.state !== 'playing') return;
+    
+    const player = game.players.get(socket.id);
+    if (!player || !player.isAlive) return;
+    
+    // Update player floor
+    player.floor = (player.floor || 0) + data.direction; // +1 or -1
+    if (player.floor < 0) player.floor = 0;
+    
+    console.log(`🪜 ${player.username} went to floor ${player.floor}`);
+  });
+  
   // ========== DISCONNECT ==========
   socket.on('disconnect', async () => {
     console.log(`👋 Player disconnected: ${socket.id}`);
@@ -1738,6 +1854,185 @@ function generateWeaponSpawns(map) {
   return spawns;
 }
 
+// ============== BUILDING TEMPLATES WITH INTERIORS ==============
+const BUILDING_TEMPLATES = {
+  house_1story: {
+    name: 'Small House',
+    width: 150,
+    height: 150,
+    floors: 1,
+    rooms: [
+      { name: 'Living Room', x: 0, y: 0, width: 90, height: 90, floor: 0 },
+      { name: 'Kitchen', x: 90, y: 0, width: 60, height: 60, floor: 0 },
+      { name: 'Bedroom', x: 90, y: 60, width: 60, height: 90, floor: 0 }
+    ],
+    doors: [
+      { x: 75, y: 0, width: 30, floor: 0, direction: 'north' }, // Front door
+      { x: 90, y: 45, width: 30, floor: 0, direction: 'east' } // Kitchen door
+    ],
+    windows: [
+      { x: 20, y: 0, size: 20, floor: 0 },
+      { x: 130, y: 75, size: 20, floor: 0 }
+    ],
+    chestSpawns: 2
+  },
+  
+  house_2story: {
+    name: 'Two Story House',
+    width: 180,
+    height: 180,
+    floors: 2,
+    rooms: [
+      // First floor
+      { name: 'Garage', x: 0, y: 0, width: 80, height: 80, floor: 0 },
+      { name: 'Living Room', x: 80, y: 0, width: 100, height: 90, floor: 0 },
+      { name: 'Kitchen', x: 0, y: 80, width: 80, height: 100, floor: 0 },
+      { name: 'Dining', x: 80, y: 90, width: 100, height: 90, floor: 0 },
+      // Second floor
+      { name: 'Master Bedroom', x: 0, y: 0, width: 90, height: 90, floor: 1 },
+      { name: 'Bedroom 2', x: 90, y: 0, width: 90, height: 80, floor: 1 },
+      { name: 'Bathroom', x: 0, y: 90, width: 60, height: 90, floor: 1 },
+      { name: 'Bedroom 3', x: 60, y: 80, width: 120, height: 100, floor: 1 }
+    ],
+    doors: [
+      { x: 90, y: 0, width: 30, floor: 0, direction: 'north' },
+      { x: 0, y: 40, width: 30, floor: 0, direction: 'west' }
+    ],
+    stairs: [
+      { x: 85, y: 85, width: 30, height: 40, floor: 0 }
+    ],
+    windows: [
+      { x: 30, y: 0, size: 20, floor: 0 },
+      { x: 150, y: 45, size: 20, floor: 0 },
+      { x: 45, y: 0, size: 20, floor: 1 },
+      { x: 135, y: 40, size: 20, floor: 1 }
+    ],
+    chestSpawns: 4
+  },
+  
+  warehouse: {
+    name: 'Warehouse',
+    width: 200,
+    height: 200,
+    floors: 1,
+    rooms: [
+      { name: 'Main Hall', x: 0, y: 0, width: 160, height: 160, floor: 0 },
+      { name: 'Office', x: 160, y: 0, width: 40, height: 80, floor: 0 },
+      { name: 'Storage', x: 160, y: 80, width: 40, height: 120, floor: 0 }
+    ],
+    doors: [
+      { x: 85, y: 0, width: 50, floor: 0, direction: 'north' }, // Big door
+      { x: 200, y: 100, width: 30, floor: 0, direction: 'east' }
+    ],
+    windows: [
+      { x: 30, y: 0, size: 25, floor: 0 },
+      { x: 170, y: 0, size: 25, floor: 0 }
+    ],
+    chestSpawns: 5
+  },
+  
+  tower: {
+    name: 'Tower',
+    width: 120,
+    height: 120,
+    floors: 3,
+    rooms: [
+      { name: 'Ground', x: 0, y: 0, width: 120, height: 120, floor: 0 },
+      { name: 'Mid', x: 0, y: 0, width: 120, height: 120, floor: 1 },
+      { name: 'Top', x: 0, y: 0, width: 120, height: 120, floor: 2 }
+    ],
+    doors: [
+      { x: 45, y: 0, width: 30, floor: 0, direction: 'north' }
+    ],
+    stairs: [
+      { x: 80, y: 80, width: 30, height: 30, floor: 0 },
+      { x: 80, y: 80, width: 30, height: 30, floor: 1 }
+    ],
+    windows: [
+      { x: 15, y: 0, size: 20, floor: 1 },
+      { x: 85, y: 0, size: 20, floor: 1 },
+      { x: 15, y: 0, size: 20, floor: 2 },
+      { x: 85, y: 0, size: 20, floor: 2 }
+    ],
+    chestSpawns: 3
+  },
+  
+  shop: {
+    name: 'Shop',
+    width: 140,
+    height: 100,
+    floors: 1,
+    rooms: [
+      { name: 'Shop Floor', x: 0, y: 0, width: 110, height: 100, floor: 0 },
+      { name: 'Back Room', x: 110, y: 0, width: 30, height: 100, floor: 0 }
+    ],
+    doors: [
+      { x: 50, y: 0, width: 40, floor: 0, direction: 'north' }, // Glass door
+      { x: 110, y: 50, width: 30, floor: 0, direction: 'east' }
+    ],
+    windows: [
+      { x: 10, y: 0, size: 30, floor: 0 },
+      { x: 100, y: 0, size: 30, floor: 0 }
+    ],
+    chestSpawns: 2
+  },
+  
+  restaurant: {
+    name: 'Restaurant',
+    width: 160,
+    height: 140,
+    floors: 1,
+    rooms: [
+      { name: 'Dining Area', x: 0, y: 0, width: 110, height: 140, floor: 0 },
+      { name: 'Kitchen', x: 110, y: 0, width: 50, height: 80, floor: 0 },
+      { name: 'Storage', x: 110, y: 80, width: 50, height: 60, floor: 0 }
+    ],
+    doors: [
+      { x: 55, y: 0, width: 35, floor: 0, direction: 'north' },
+      { x: 110, y: 40, width: 30, floor: 0, direction: 'east' }
+    ],
+    windows: [
+      { x: 15, y: 0, size: 35, floor: 0 },
+      { x: 95, y: 0, size: 35, floor: 0 }
+    ],
+    chestSpawns: 3
+  },
+  
+  apartment: {
+    name: 'Apartment Building',
+    width: 200,
+    height: 200,
+    floors: 3,
+    rooms: [
+      // Ground floor - lobby
+      { name: 'Lobby', x: 60, y: 0, width: 80, height: 60, floor: 0 },
+      { name: 'Apt 101', x: 0, y: 0, width: 60, height: 100, floor: 0 },
+      { name: 'Apt 102', x: 140, y: 0, width: 60, height: 100, floor: 0 },
+      // Second floor
+      { name: 'Apt 201', x: 0, y: 0, width: 90, height: 90, floor: 1 },
+      { name: 'Apt 202', x: 110, y: 0, width: 90, height: 90, floor: 1 },
+      { name: 'Hallway', x: 90, y: 0, width: 20, height: 200, floor: 1 },
+      // Third floor
+      { name: 'Apt 301', x: 0, y: 0, width: 90, height: 90, floor: 2 },
+      { name: 'Apt 302', x: 110, y: 0, width: 90, height: 90, floor: 2 }
+    ],
+    doors: [
+      { x: 90, y: 0, width: 40, floor: 0, direction: 'north' }
+    ],
+    stairs: [
+      { x: 95, y: 70, width: 35, height: 40, floor: 0 },
+      { x: 95, y: 70, width: 35, height: 40, floor: 1 }
+    ],
+    windows: [
+      { x: 30, y: 0, size: 20, floor: 1 },
+      { x: 150, y: 0, size: 20, floor: 1 },
+      { x: 30, y: 0, size: 20, floor: 2 },
+      { x: 150, y: 0, size: 20, floor: 2 }
+    ],
+    chestSpawns: 6
+  }
+};
+
 function generateBuildings(map) {
   const buildings = [];
   
@@ -1746,90 +2041,147 @@ function generateBuildings(map) {
     map.pois.forEach(poi => {
       const buildingCount = poi.buildings || 10;
       
+      // Choose building types based on POI
+      let buildingTypes = [];
+      if (poi.type === 'urban') {
+        // Dense city - tall buildings, apartments
+        buildingTypes = ['apartment', 'tower', 'shop', 'restaurant', 'house_2story'];
+      } else if (poi.type === 'mall') {
+        // Shopping district
+        buildingTypes = ['shop', 'shop', 'restaurant', 'warehouse'];
+      } else if (poi.type === 'castle') {
+        // Medieval style
+        buildingTypes = ['tower', 'tower', 'warehouse'];
+      } else if (poi.type === 'military') {
+        // Military base
+        buildingTypes = ['warehouse', 'warehouse', 'tower'];
+      } else if (poi.type === 'neighborhood') {
+        // Suburban houses
+        buildingTypes = ['house_1story', 'house_2story', 'house_2story'];
+      } else if (poi.type === 'forest') {
+        // Cabins and lodges
+        buildingTypes = ['house_1story', 'house_1story', 'warehouse'];
+      } else if (poi.type === 'beach') {
+        // Coastal buildings
+        buildingTypes = ['house_1story', 'shop', 'restaurant'];
+      } else if (poi.type === 'industrial') {
+        // Factories and warehouses
+        buildingTypes = ['warehouse', 'warehouse', 'tower'];
+      } else if (poi.type === 'lodge') {
+        // Remote cabins
+        buildingTypes = ['house_1story', 'house_2story'];
+      } else if (poi.type === 'entertainment') {
+        // Theater, venues
+        buildingTypes = ['shop', 'restaurant', 'tower', 'warehouse'];
+      } else if (poi.type === 'hospital') {
+        // Medical buildings
+        buildingTypes = ['tower', 'apartment', 'warehouse'];
+      } else if (poi.type === 'park') {
+        // Amusement park buildings
+        buildingTypes = ['shop', 'restaurant', 'warehouse', 'tower'];
+      } else {
+        // Default mix
+        buildingTypes = ['house_1story', 'house_2story', 'apartment'];
+      }
+      
       for (let i = 0; i < buildingCount; i++) {
         // Cluster buildings around POI center
         const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * (poi.size / 2);
+        const distance = Math.random() * (poi.size / 2.5); // Tighter clustering
         const x = poi.x + Math.cos(angle) * distance;
         const y = poi.y + Math.sin(angle) * distance;
         
-        const type = poi.type === 'urban' ? (Math.random() > 0.5 ? 'house' : 'warehouse') :
-                     poi.type === 'mall' ? 'warehouse' :
-                     poi.type === 'castle' ? 'tower' :
-                     poi.type === 'military' ? 'bunker' :
-                     ['house', 'warehouse', 'tower'][Math.floor(Math.random() * 3)];
+        // Pick random template
+        const templateKey = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
+        const template = BUILDING_TEMPLATES[templateKey];
         
-        const size = type === 'tower' ? 60 : 
-                     type === 'warehouse' ? 100 : 
-                     type === 'bunker' ? 90 : 70;
-        
-        buildings.push({
-          id: uuidv4(),
-          type: type,
-          x: x,
-          y: y,
-          width: size,
-          height: size,
-          health: type === 'bunker' ? 500 : 300,
-          maxHealth: type === 'bunker' ? 500 : 300,
-          material: 'brick',
-          poi: poi.name // Tag with POI name
-        });
+        buildings.push(createBuildingFromTemplate(template, x, y, poi.name));
       }
     });
   } else {
     // Fallback: Random building placement
     const buildingCount = map.buildings || 30;
+    const templates = Object.keys(BUILDING_TEMPLATES);
+    
     for (let i = 0; i < buildingCount; i++) {
-      const type = ['house', 'warehouse', 'tower', 'bunker'][Math.floor(Math.random() * 4)];
-      const size = type === 'tower' ? 60 : type === 'warehouse' ? 100 : 70;
+      const templateKey = templates[Math.floor(Math.random() * templates.length)];
+      const template = BUILDING_TEMPLATES[templateKey];
       
-      buildings.push({
-        id: uuidv4(),
-        type: type,
-        x: Math.random() * (map.size - 400) + 200,
-        y: Math.random() * (map.size - 400) + 200,
-        width: size,
-        height: size,
-        health: type === 'bunker' ? 500 : 300,
-        maxHealth: type === 'bunker' ? 500 : 300,
-        material: 'brick'
-      });
+      const x = Math.random() * (map.size - 400) + 200;
+      const y = Math.random() * (map.size - 400) + 200;
+      
+      buildings.push(createBuildingFromTemplate(template, x, y));
     }
   }
   
   return buildings;
 }
 
-function generateChests(map) {
+function createBuildingFromTemplate(template, x, y, poiName = null) {
+  return {
+    id: uuidv4(),
+    name: template.name,
+    x: x,
+    y: y,
+    width: template.width,
+    height: template.height,
+    floors: template.floors,
+    rooms: template.rooms.map(room => ({
+      ...room,
+      // Convert to world coordinates
+      worldX: x + room.x,
+      worldY: y + room.y
+    })),
+    doors: template.doors.map(door => ({
+      ...door,
+      id: uuidv4(),
+      worldX: x + door.x,
+      worldY: y + door.y,
+      open: false // All doors start closed
+    })),
+    stairs: (template.stairs || []).map(stair => ({
+      ...stair,
+      worldX: x + stair.x,
+      worldY: y + stair.y
+    })),
+    windows: template.windows || [],
+    chestSpawns: template.chestSpawns || 0,
+    poi: poiName,
+    health: 1000,
+    maxHealth: 1000,
+    material: 'brick'
+  };
+}
+
+function generateChests(map, buildings) {
   const chests = [];
   
-  // If map has POIs, spawn chests in them
-  if (map.pois && map.pois.length > 0) {
-    map.pois.forEach(poi => {
-      const chestCount = poi.chests || 5;
+  // Spawn chests INSIDE buildings!
+  if (buildings && buildings.length > 0) {
+    buildings.forEach(building => {
+      const numChests = building.chestSpawns || Math.floor(Math.random() * 3);
       
-      for (let i = 0; i < chestCount; i++) {
-        // Cluster chests in POI
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * (poi.size / 2.5); // Closer to center
-        const x = poi.x + Math.cos(angle) * distance;
-        const y = poi.y + Math.sin(angle) * distance;
+      for (let i = 0; i < numChests; i++) {
+        // Pick random room
+        if (!building.rooms || building.rooms.length === 0) continue;
+        const room = building.rooms[Math.floor(Math.random() * building.rooms.length)];
         
+        // Place chest in random position within room
+        const chestX = room.worldX + Math.random() * (room.width - 40) + 20;
+        const chestY = room.worldY + Math.random() * (room.height - 40) + 20;
+        
+        // Determine rarity
         const rarity = Math.random();
         let chestType = 'common';
         let lootQuality = 1;
         
-        // Higher chance of good loot in certain POIs
-        const rarityBoost = (poi.name === 'Memory Mall' || poi.name === 'Knowledge Keep') ? 0.1 : 0;
-        
-        if (rarity + rarityBoost > 0.95) {
+        if (rarity > 0.95) {
           chestType = 'legendary';
           lootQuality = 4;
-        } else if (rarity + rarityBoost > 0.85) {
+        } else if (rarity > 0.85) {
           chestType = 'epic';
           lootQuality = 3;
-        } else if (rarity + rarityBoost > 0.7) {
+        } else if (rarity > 0.7) {
           chestType = 'rare';
           lootQuality = 2;
         }
@@ -1837,11 +2189,13 @@ function generateChests(map) {
         chests.push({
           id: uuidv4(),
           type: chestType,
-          x: x,
-          y: y,
+          x: chestX,
+          y: chestY,
+          floor: room.floor || 0,
+          buildingId: building.id,
+          room: room.name,
           opened: false,
           lootQuality: lootQuality,
-          poi: poi.name, // Tag with POI
           loot: {
             weapon: generateChestWeapon(lootQuality),
             ammo: 30 + (lootQuality * 20),
@@ -1856,75 +2210,51 @@ function generateChests(map) {
         });
       }
     });
-    
-    // Add some random chests outside POIs
-    const randomChests = Math.floor(map.size / 200);
-    for (let i = 0; i < randomChests; i++) {
-      const rarity = Math.random();
-      let chestType = 'common';
-      let lootQuality = 1;
+  }
+  
+  // Also add some outdoor chests in POIs
+  if (map.pois && map.pois.length > 0) {
+    map.pois.forEach(poi => {
+      const outdoorChests = 2; // Just a few outdoor chests per POI
       
-      if (rarity > 0.9) chestType = 'rare', lootQuality = 2;
-      
-      chests.push({
-        id: uuidv4(),
-        type: chestType,
-        x: Math.random() * (map.size - 400) + 200,
-        y: Math.random() * (map.size - 400) + 200,
-        opened: false,
-        lootQuality: lootQuality,
-        loot: {
-          weapon: generateChestWeapon(lootQuality),
-          ammo: 30 + (lootQuality * 20),
-          health: lootQuality >= 2 ? 50 : 0,
-          shield: lootQuality >= 3 ? 50 : 0,
-          materials: {
-            wood: 50 * lootQuality,
-            brick: 30 * lootQuality,
-            metal: 20 * lootQuality
-          }
+      for (let i = 0; i < outdoorChests; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * (poi.size / 3);
+        const x = poi.x + Math.cos(angle) * distance;
+        const y = poi.y + Math.sin(angle) * distance;
+        
+        const rarity = Math.random();
+        let chestType = 'common';
+        let lootQuality = 1;
+        
+        if (rarity > 0.9) {
+          chestType = 'rare';
+          lootQuality = 2;
         }
-      });
-    }
-  } else {
-    // Fallback: Random chest placement
-    const chestCount = Math.floor(map.size / 100);
-    for (let i = 0; i < chestCount; i++) {
-      const rarity = Math.random();
-      let chestType = 'common';
-      let lootQuality = 1;
-      
-      if (rarity > 0.95) {
-        chestType = 'legendary';
-        lootQuality = 4;
-      } else if (rarity > 0.85) {
-        chestType = 'epic';
-        lootQuality = 3;
-      } else if (rarity > 0.7) {
-        chestType = 'rare';
-        lootQuality = 2;
+        
+        chests.push({
+          id: uuidv4(),
+          type: chestType,
+          x: x,
+          y: y,
+          floor: 0,
+          opened: false,
+          lootQuality: lootQuality,
+          poi: poi.name,
+          loot: {
+            weapon: generateChestWeapon(lootQuality),
+            ammo: 30 + (lootQuality * 20),
+            health: lootQuality >= 2 ? 50 : 0,
+            shield: lootQuality >= 3 ? 50 : 0,
+            materials: {
+              wood: 50 * lootQuality,
+              brick: 30 * lootQuality,
+              metal: 20 * lootQuality
+            }
+          }
+        });
       }
-      
-      chests.push({
-        id: uuidv4(),
-        type: chestType,
-        x: Math.random() * (map.size - 400) + 200,
-        y: Math.random() * (map.size - 400) + 200,
-        opened: false,
-        lootQuality: lootQuality,
-        loot: {
-          weapon: generateChestWeapon(lootQuality),
-          ammo: 30 + (lootQuality * 20),
-          health: lootQuality >= 2 ? 50 : 0,
-          shield: lootQuality >= 3 ? 50 : 0,
-          materials: {
-            wood: 50 * lootQuality,
-            brick: 30 * lootQuality,
-            metal: 20 * lootQuality
-          }
-        }
-      });
-    }
+    });
   }
   
   return chests;
