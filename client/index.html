@@ -1348,6 +1348,7 @@
       </div>
       <div class="top-bar-right">
         <div class="coins-display">💰 <span id="coins-header">0</span></div>
+        <button class="top-button" onclick="openLocker()">🎽 Locker</button>
         <button class="top-button" onclick="openShop()">🛍️ Shop</button>
         <button class="top-button" onclick="openBattleTicket()">🎫 Battle Ticket</button>
         <button class="top-button" onclick="logout()">Logout</button>
@@ -1807,6 +1808,73 @@
       <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
         <button class="secondary-button" onclick="closeSettings()">Cancel</button>
         <button class="auth-button" onclick="saveSettings()">💾 Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== LOCKER MODAL ========== -->
+  <div id="locker-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 1100px; max-height: 90vh;">
+      <button class="modal-close" onclick="closeLocker()">×</button>
+      <h2 style="margin-bottom: 20px; color: #667eea;">🎽 Locker - Equip Your Style</h2>
+      
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 10px; margin-bottom: 20px; color: white;">
+        <h3 style="margin: 0 0 10px 0;">👤 Current Loadout</h3>
+        <div style="display: flex; gap: 20px; align-items: center;">
+          <div style="text-align: center;">
+            <canvas id="locker-preview" width="120" height="120" style="background: rgba(255,255,255,0.2); border-radius: 10px;"></canvas>
+            <div style="margin-top: 10px; font-weight: bold; font-size: 18px;" id="locker-skin-name">Classic Bot</div>
+          </div>
+          <div style="flex: 1;">
+            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px;">
+              <div><strong>Skin:</strong> <span id="equipped-skin-display">Classic Bot</span></div>
+              <div style="margin-top: 8px;"><strong>Trail:</strong> <span id="equipped-trail-display">Default</span></div>
+              <div style="margin-top: 8px;"><strong>Emotes:</strong> <span id="equipped-emotes-display">Wave, Thumbs Up</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Locker Tabs -->
+      <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd;">
+        <button class="shop-tab active" onclick="switchLockerTab('skins')" data-tab="skins">🎨 Skins</button>
+        <button class="shop-tab" onclick="switchLockerTab('trails')" data-tab="trails">✨ Trails</button>
+        <button class="shop-tab" onclick="switchLockerTab('emotes')" data-tab="emotes">😄 Emotes</button>
+      </div>
+
+      <!-- Locker Content -->
+      <div style="max-height: 400px; overflow-y: auto; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+        
+        <!-- SKINS TAB -->
+        <div id="locker-skins" class="locker-tab-content active">
+          <h3 style="margin-bottom: 15px;">Your Skins</h3>
+          <div id="locker-skins-grid" class="shop-grid">
+            <!-- Dynamically loaded -->
+          </div>
+        </div>
+
+        <!-- TRAILS TAB -->
+        <div id="locker-trails" class="locker-tab-content" style="display: none;">
+          <h3 style="margin-bottom: 15px;">Your Trails</h3>
+          <p style="color: #666;">Trails coming soon! Leave a colorful path as you move.</p>
+          <div id="locker-trails-grid" class="shop-grid">
+            <!-- Dynamically loaded -->
+          </div>
+        </div>
+
+        <!-- EMOTES TAB -->
+        <div id="locker-emotes" class="locker-tab-content" style="display: none;">
+          <h3 style="margin-bottom: 15px;">Your Emotes</h3>
+          <p style="color: #666;">Express yourself with emotes!</p>
+          <div id="locker-emotes-grid" class="shop-grid">
+            <!-- Dynamically loaded -->
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top: 20px; text-align: center;">
+        <button class="auth-button" onclick="closeLocker()">Done</button>
       </div>
     </div>
   </div>
@@ -3070,6 +3138,204 @@
     
     function closeShop() {
       document.getElementById('shop-modal').classList.remove('active');
+    }
+    
+    // ========== LOCKER SYSTEM ==========
+    function openLocker() {
+      document.getElementById('locker-modal').classList.add('active');
+      loadLockerItems();
+      updateLockerPreview();
+    }
+    
+    function closeLocker() {
+      document.getElementById('locker-modal').classList.remove('active');
+    }
+    
+    function switchLockerTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.shop-tab').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+      
+      // Update content
+      document.querySelectorAll('.locker-tab-content').forEach(content => {
+        content.style.display = 'none';
+      });
+      document.getElementById('locker-' + tab).style.display = 'block';
+    }
+    
+    function loadLockerItems() {
+      if (!currentUser || !currentUser.inventory) return;
+      
+      const ownedSkins = currentUser.inventory.ownedSkins || ['default'];
+      const equippedSkin = currentUser.inventory.equippedSkin || 'default';
+      
+      const skinsGrid = document.getElementById('locker-skins-grid');
+      skinsGrid.innerHTML = '';
+      
+      ownedSkins.forEach(skinId => {
+        const skin = CharacterRenderer.skins[skinId];
+        if (!skin) return;
+        
+        const card = document.createElement('div');
+        card.className = 'shop-item';
+        card.style.cursor = 'pointer';
+        card.style.position = 'relative';
+        
+        // Equipped indicator
+        if (skinId === equippedSkin) {
+          card.style.border = '3px solid #00ff00';
+          card.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.5)';
+          
+          const equipped = document.createElement('div');
+          equipped.style.cssText = `
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #00ff00;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+          `;
+          equipped.textContent = '✓ EQUIPPED';
+          card.appendChild(equipped);
+        }
+        
+        const preview = document.createElement('canvas');
+        preview.width = 100;
+        preview.height = 100;
+        preview.style.width = '100%';
+        preview.style.height = 'auto';
+        
+        const ctx = preview.getContext('2d');
+        ctx.save();
+        ctx.translate(50, 50);
+        try {
+          CharacterRenderer.render(ctx, skinId, 30);
+        } catch (e) {
+          console.error('Render error:', e);
+        }
+        ctx.restore();
+        
+        const name = document.createElement('div');
+        name.style.cssText = 'margin-top: 10px; font-weight: bold; text-align: center;';
+        name.textContent = skin.name;
+        
+        const equipBtn = document.createElement('button');
+        equipBtn.style.cssText = `
+          width: 100%;
+          padding: 8px;
+          margin-top: 10px;
+          border: none;
+          border-radius: 5px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.3s;
+        `;
+        
+        if (skinId === equippedSkin) {
+          equipBtn.textContent = '✓ Equipped';
+          equipBtn.style.background = '#28a745';
+          equipBtn.style.color = 'white';
+          equipBtn.disabled = true;
+        } else {
+          equipBtn.textContent = 'Equip';
+          equipBtn.style.background = '#667eea';
+          equipBtn.style.color = 'white';
+          equipBtn.onclick = () => equipSkin(skinId);
+          equipBtn.onmouseenter = () => equipBtn.style.background = '#5568d3';
+          equipBtn.onmouseleave = () => equipBtn.style.background = '#667eea';
+        }
+        
+        card.appendChild(preview);
+        card.appendChild(name);
+        card.appendChild(equipBtn);
+        skinsGrid.appendChild(card);
+      });
+    }
+    
+    async function equipSkin(skinId) {
+      if (!currentUser) return;
+      
+      try {
+        // Update locally
+        currentUser.inventory.equippedSkin = skinId;
+        selectedSkin = skinId;
+        
+        // Save to server
+        if (!isGuest) {
+          const res = await fetch('/api/auth/profile', {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              inventory: {
+                equippedSkin: skinId
+              }
+            })
+          });
+          
+          if (!res.ok) {
+            console.error('Failed to save equipped skin');
+          }
+        }
+        
+        // Reload locker to show new equipped state
+        loadLockerItems();
+        updateLockerPreview();
+        
+        // Show feedback
+        const btn = event.currentTarget;
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Equipped!';
+        btn.style.background = '#28a745';
+        setTimeout(() => {
+          loadLockerItems();
+        }, 500);
+        
+      } catch (error) {
+        console.error('Equip error:', error);
+        alert('Failed to equip skin');
+      }
+    }
+    
+    function updateLockerPreview() {
+      if (!currentUser || !currentUser.inventory) return;
+      
+      const equippedSkin = currentUser.inventory.equippedSkin || 'default';
+      const skin = CharacterRenderer.skins[equippedSkin];
+      
+      // Update preview canvas
+      const canvas = document.getElementById('locker-preview');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(60, 60);
+        try {
+          CharacterRenderer.render(ctx, equippedSkin, 40);
+        } catch (e) {
+          console.error('Preview render error:', e);
+        }
+        ctx.restore();
+      }
+      
+      // Update skin name
+      const nameEl = document.getElementById('locker-skin-name');
+      if (nameEl && skin) {
+        nameEl.textContent = skin.name;
+      }
+      
+      // Update equipped display
+      const displayEl = document.getElementById('equipped-skin-display');
+      if (displayEl && skin) {
+        displayEl.textContent = skin.name;
+      }
     }
     
     async function switchShopTab(tab) {

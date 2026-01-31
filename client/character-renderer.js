@@ -223,96 +223,114 @@ const CharacterRenderer = {
 
   // Standard robot design
   drawStandardBot(ctx, skin, size) {
-    // Main body
-    ctx.fillStyle = skin.primary;
-    ctx.beginPath();
-    this.roundRect(ctx, -size * 0.35, -size * 0.2, size * 0.7, size * 0.6, size * 0.15);
-    ctx.fill();
-    
-    // Body gradient
-    const bodyGradient = ctx.createLinearGradient(-size * 0.3, -size * 0.2, size * 0.3, size * 0.4);
+    // === CUTE ROUNDED BODY (like uploaded image!) ===
+    const bodyGradient = ctx.createLinearGradient(0, -size * 0.4, 0, size * 0.5);
     bodyGradient.addColorStop(0, skin.primary);
-    bodyGradient.addColorStop(1, skin.secondary);
+    bodyGradient.addColorStop(0.5, skin.secondary);
+    bodyGradient.addColorStop(1, this.darkenColor(skin.secondary, 0.8));
+    
+    // Main body - super round!
     ctx.fillStyle = bodyGradient;
-    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = size * 0.1; // THICK outline like the image!
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
     
-    ctx.strokeStyle = skin.accent;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    
-    // Screen/Head
-    ctx.fillStyle = '#000';
     ctx.beginPath();
-    this.roundRect(ctx, -size * 0.3, -size * 0.45, size * 0.6, size * 0.35, size * 0.1);
+    // Oval body shape
+    ctx.ellipse(0, 0, size * 0.45, size * 0.5, 0, 0, Math.PI * 2);
     ctx.fill();
-    
-    ctx.strokeStyle = skin.screen;
-    ctx.lineWidth = 2;
     ctx.stroke();
     
-    // Face
-    this.drawFace(ctx, skin, size);
+    // === CUTE SIMPLE EYES (oval shapes like the image) ===
+    ctx.fillStyle = '#000';
     
-    // Antenna
-    if (skin.antenna) {
-      ctx.strokeStyle = skin.antennaColor;
-      ctx.lineWidth = 3;
+    // Left eye - simple oval
+    ctx.beginPath();
+    ctx.ellipse(-size * 0.15, -size * 0.08, size * 0.08, size * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Right eye - simple oval
+    ctx.beginPath();
+    ctx.ellipse(size * 0.15, -size * 0.08, size * 0.08, size * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // === SHORT CUTE LEGS (like the image) ===
+    const legGradient = ctx.createLinearGradient(0, size * 0.4, 0, size * 0.6);
+    legGradient.addColorStop(0, this.darkenColor(skin.secondary, 0.9));
+    legGradient.addColorStop(1, this.darkenColor(skin.secondary, 0.7));
+    
+    ctx.fillStyle = legGradient;
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = size * 0.1;
+    
+    // Left leg - short and cute
+    ctx.beginPath();
+    this.roundRect(ctx, -size * 0.28, size * 0.4, size * 0.25, size * 0.18, size * 0.1);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Right leg - short and cute
+    ctx.beginPath();
+    this.roundRect(ctx, size * 0.03, size * 0.4, size * 0.25, size * 0.18, size * 0.1);
+    ctx.fill();
+    ctx.stroke();
+    
+    // === HIGHLIGHT for 3D effect ===
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.beginPath();
+    ctx.ellipse(-size * 0.12, -size * 0.25, size * 0.2, size * 0.25, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // === ANTENNA (optional) ===
+    if (skin.antenna !== false) {
+      ctx.strokeStyle = skin.accent || skin.primary;
+      ctx.lineWidth = size * 0.06;
       ctx.beginPath();
-      ctx.moveTo(0, -size * 0.45);
-      ctx.lineTo(0, -size * 0.6);
+      ctx.moveTo(0, -size * 0.5);
+      ctx.lineTo(0, -size * 0.7);
       ctx.stroke();
       
-      ctx.fillStyle = skin.antennaColor;
-      ctx.shadowColor = skin.antennaColor;
-      ctx.shadowBlur = 10;
+      // Antenna bulb with glow
+      const antennaGradient = ctx.createRadialGradient(0, -size * 0.7, 0, 0, -size * 0.7, size * 0.12);
+      antennaGradient.addColorStop(0, skin.accent || skin.primary);
+      antennaGradient.addColorStop(0.5, skin.accent || skin.primary);
+      antennaGradient.addColorStop(1, 'rgba(255,255,255,0)');
+      
+      ctx.fillStyle = antennaGradient;
       ctx.beginPath();
-      ctx.arc(0, -size * 0.6, size * 0.08, 0, Math.PI * 2);
+      ctx.arc(0, -size * 0.7, size * 0.12, 0, Math.PI * 2);
       ctx.fill();
-      ctx.shadowBlur = 0;
+      
+      ctx.fillStyle = skin.accent || skin.primary;
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = size * 0.06;
+      ctx.beginPath();
+      ctx.arc(0, -size * 0.7, size * 0.08, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
     }
     
-    // Arms
-    const armColor = skin.secondary;
-    ctx.fillStyle = armColor;
-    ctx.strokeStyle = skin.accent;
-    ctx.lineWidth = 2;
-    
-    ctx.beginPath();
-    this.roundRect(ctx, -size * 0.5, -size * 0.05, size * 0.15, size * 0.35, size * 0.05);
-    ctx.fill();
-    ctx.stroke();
-    
-    ctx.beginPath();
-    this.roundRect(ctx, size * 0.35, -size * 0.05, size * 0.15, size * 0.35, size * 0.05);
-    ctx.fill();
-    ctx.stroke();
-    
-    // Legs
-    ctx.beginPath();
-    this.roundRect(ctx, -size * 0.2, size * 0.35, size * 0.15, size * 0.25, size * 0.05);
-    ctx.fill();
-    ctx.stroke();
-    
-    ctx.beginPath();
-    this.roundRect(ctx, size * 0.05, size * 0.35, size * 0.15, size * 0.25, size * 0.05);
-    ctx.fill();
-    ctx.stroke();
-    
-    // Chest symbol
-    ctx.fillStyle = skin.accent;
-    ctx.font = `${size * 0.3}px Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🧠', 0, size * 0.1);
-    
-    // Special accessories
-    if (skin.special === 'cap') {
-      this.drawGraduationCap(ctx, skin, size);
-    } else if (skin.special === 'glasses') {
-      this.drawGlasses(ctx, skin, size);
-    } else if (skin.special === 'crown') {
-      this.drawCrown(ctx, skin, size);
+    // === CHEST DETAIL (optional) ===
+    if (skin.special !== 'banana' && skin.special !== 'dog_ears') {
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.beginPath();
+      ctx.arc(0, size * 0.15, size * 0.08, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.lineWidth = size * 0.03;
+      ctx.stroke();
     }
+  },
+  
+  // Helper to darken colors
+  darkenColor(color, factor) {
+    // Simple darkening - multiply RGB values
+    const hex = color.replace('#', '');
+    const r = Math.floor(parseInt(hex.substr(0, 2), 16) * factor);
+    const g = Math.floor(parseInt(hex.substr(2, 2), 16) * factor);
+    const b = Math.floor(parseInt(hex.substr(4, 2), 16) * factor);
+    return `rgb(${r}, ${g}, ${b})`;
   },
 
   // Banana Bot (Peely-inspired)
