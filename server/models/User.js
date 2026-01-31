@@ -80,14 +80,91 @@ const UserSchema = new mongoose.Schema({
   
   // Settings
   settings: {
-    chatEnabled: { type: Boolean, default: true },
-    voiceChatEnabled: { type: Boolean, default: false },
-    profanityFilter: { type: Boolean, default: true },
-    friendRequestsEnabled: { type: Boolean, default: true },
-    showOnlineStatus: { type: Boolean, default: true },
+    // Audio Settings
+    masterVolume: { type: Number, default: 0.7, min: 0, max: 1 },
+    musicVolume: { type: Number, default: 0.5, min: 0, max: 1 },
+    sfxVolume: { type: Number, default: 0.7, min: 0, max: 1 },
+    voiceVolume: { type: Number, default: 1.0, min: 0, max: 1 },
     soundEffects: { type: Boolean, default: true },
     music: { type: Boolean, default: true },
-    masterVolume: { type: Number, default: 0.7 }
+    
+    // Voice Chat Settings
+    voiceChatEnabled: { type: Boolean, default: false },
+    voiceChatMode: { type: String, enum: ['everyone', 'friends', 'team', 'off'], default: 'friends' },
+    pushToTalk: { type: Boolean, default: true },
+    voiceActivation: { type: Boolean, default: false },
+    micSensitivity: { type: Number, default: 0.5, min: 0, max: 1 },
+    
+    // Chat Settings
+    chatEnabled: { type: Boolean, default: true },
+    profanityFilter: { type: Boolean, default: true },
+    showTimestamps: { type: Boolean, default: false },
+    chatOpacity: { type: Number, default: 0.8, min: 0.3, max: 1 },
+    
+    // Controls Settings
+    keybinds: {
+      moveForward: { type: String, default: 'w' },
+      moveBack: { type: String, default: 's' },
+      moveLeft: { type: String, default: 'a' },
+      moveRight: { type: String, default: 'd' },
+      jump: { type: String, default: 'space' },
+      crouch: { type: String, default: 'c' },
+      sprint: { type: String, default: 'shift' },
+      interact: { type: String, default: 'e' },
+      reload: { type: String, default: 'r' },
+      buildMode: { type: String, default: 'q' },
+      buildWall: { type: String, default: 'q' },
+      buildFloor: { type: String, default: 'f' },
+      buildStair: { type: String, default: 'v' },
+      buildRoof: { type: String, default: 'g' },
+      inventory: { type: String, default: 'tab' },
+      map: { type: String, default: 'm' },
+      emote: { type: String, default: 'b' },
+      ping: { type: String, default: 'middlemouse' }
+    },
+    mouseSensitivity: { type: Number, default: 0.5, min: 0.1, max: 2 },
+    invertY: { type: Boolean, default: false },
+    
+    // Gameplay Settings
+    simpleBuildMode: { type: Boolean, default: false },
+    autoRun: { type: Boolean, default: false },
+    autoPickup: { type: Boolean, default: true },
+    autoOpenDoors: { type: Boolean, default: false },
+    autoSwitchWeapon: { type: Boolean, default: true },
+    confirmReset: { type: Boolean, default: true },
+    toggleSprint: { type: Boolean, default: false },
+    toggleCrouch: { type: Boolean, default: false },
+    
+    // Graphics Settings
+    graphicsQuality: { type: String, enum: ['low', 'medium', 'high', 'ultra'], default: 'high' },
+    showFPS: { type: Boolean, default: false },
+    showPing: { type: Boolean, default: true },
+    motionBlur: { type: Boolean, default: false },
+    shadowQuality: { type: String, enum: ['off', 'low', 'medium', 'high'], default: 'medium' },
+    effectsQuality: { type: String, enum: ['low', 'medium', 'high'], default: 'high' },
+    viewDistance: { type: String, enum: ['near', 'medium', 'far', 'epic'], default: 'far' },
+    
+    // HUD Settings
+    hudScale: { type: Number, default: 1.0, min: 0.5, max: 1.5 },
+    showDamageNumbers: { type: Boolean, default: true },
+    showHealthBar: { type: Boolean, default: true },
+    showReticle: { type: Boolean, default: true },
+    showKillFeed: { type: Boolean, default: true },
+    minimapSize: { type: String, enum: ['small', 'medium', 'large'], default: 'medium' },
+    
+    // Privacy Settings
+    showOnlineStatus: { type: Boolean, default: true },
+    friendRequestsEnabled: { type: Boolean, default: true },
+    allowSpectators: { type: Boolean, default: true },
+    hideUsername: { type: Boolean, default: false },
+    shareStats: { type: Boolean, default: true },
+    
+    // Accessibility Settings
+    colorblindMode: { type: String, enum: ['off', 'protanopia', 'deuteranopia', 'tritanopia'], default: 'off' },
+    subtitles: { type: Boolean, default: false },
+    reduceMotion: { type: Boolean, default: false },
+    textSize: { type: String, enum: ['small', 'medium', 'large'], default: 'medium' },
+    highContrast: { type: Boolean, default: false }
   },
   
   // Admin & Moderation

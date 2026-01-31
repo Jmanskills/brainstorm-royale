@@ -931,6 +931,194 @@
       color: #856404;
       font-size: 14px;
     }
+    
+    /* ========== SETTINGS TABS ========== */
+    .settings-tabs {
+      display: flex;
+      gap: 5px;
+      border-bottom: 2px solid #ddd;
+      margin-bottom: 0;
+      overflow-x: auto;
+    }
+    
+    .settings-tab {
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+    
+    .settings-tab:hover {
+      color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .settings-tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+    
+    .settings-panel {
+      display: none;
+    }
+    
+    .settings-panel.active {
+      display: block;
+    }
+    
+    .setting-description {
+      font-size: 12px;
+      color: #666;
+      margin: -5px 0 15px 0;
+      font-style: italic;
+    }
+    
+    .settings-select {
+      padding: 8px 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+      min-width: 180px;
+    }
+    
+    .settings-select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    /* ========== KEYBIND STYLES ========== */
+    .keybind-list {
+      background: white;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    
+    .keybind-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .keybind-item:last-child {
+      border-bottom: none;
+    }
+    
+    .keybind-button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      min-width: 60px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+    
+    .keybind-button:hover {
+      background: #5568d3;
+      transform: scale(1.05);
+    }
+    
+    .keybind-button.waiting {
+      background: #ffc107;
+      animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    /* ========== SLIDER STYLES ========== */
+    input[type="range"] {
+      width: 100%;
+      max-width: 300px;
+      height: 6px;
+      border-radius: 3px;
+      background: #ddd;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #667eea;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: #5568d3;
+      transform: scale(1.2);
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #667eea;
+      cursor: pointer;
+      border: none;
+    }
+    
+    /* ========== BUTTON STYLES ========== */
+    .reset-button, .test-button {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 15px;
+      transition: all 0.3s;
+    }
+    
+    .reset-button:hover, .test-button:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+    }
+    
+    .test-button {
+      background: #28a745;
+    }
+    
+    .test-button:hover {
+      background: #218838;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: left 0.3s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .toggle-switch.active .toggle-slider {
+      left: 26px;
+    }
 
     /* ========== LOBBY/GAME/POSTGAME (keeping existing styles) ========== */
     #lobby-screen, #game-screen, #postgame-screen {
@@ -1271,47 +1459,355 @@
 
   <!-- ========== SETTINGS MODAL ========== -->
   <div id="settings-modal" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow: hidden;">
       <button class="modal-close" onclick="closeSettings()">×</button>
-      <h2 style="margin-bottom: 20px; color: #667eea;">Settings</h2>
+      <h2 style="margin-bottom: 20px; color: #667eea;">⚙️ Settings</h2>
 
-      <div class="settings-section">
-        <h3>Chat Settings</h3>
-        <div class="setting-item">
-          <span>Enable Text Chat</span>
-          <div class="toggle-switch" id="chat-toggle" onclick="toggleSetting('chat')"></div>
-        </div>
-        <div class="setting-item">
-          <span>Profanity Filter</span>
-          <div class="toggle-switch active" id="profanity-toggle" onclick="toggleSetting('profanity')"></div>
-        </div>
+      <!-- Settings Tabs -->
+      <div class="settings-tabs">
+        <button class="settings-tab active" onclick="switchSettingsTab('controls')" data-tab="controls">🎮 Controls</button>
+        <button class="settings-tab" onclick="switchSettingsTab('voice')" data-tab="voice">🎤 Voice</button>
+        <button class="settings-tab" onclick="switchSettingsTab('audio')" data-tab="audio">🔊 Audio</button>
+        <button class="settings-tab" onclick="switchSettingsTab('graphics')" data-tab="graphics">🎨 Graphics</button>
+        <button class="settings-tab" onclick="switchSettingsTab('gameplay')" data-tab="gameplay">🎯 Gameplay</button>
+        <button class="settings-tab" onclick="switchSettingsTab('privacy')" data-tab="privacy">🔒 Privacy</button>
       </div>
 
-      <div class="settings-section">
-        <h3>Voice Chat Settings</h3>
-        <div class="warning-box">
-          <h4>⚠️ Voice Chat Warning</h4>
-          <p>Voice chat connects you directly with other players. By enabling voice chat, you agree to communicate respectfully and not share personal information. Parents should monitor their child's online interactions.</p>
+      <!-- Settings Content Container -->
+      <div class="settings-content" style="max-height: 500px; overflow-y: auto; padding: 20px; background: #f8f9fa; border-radius: 10px; margin: 20px 0;">
+        
+        <!-- CONTROLS TAB -->
+        <div id="settings-controls" class="settings-panel active">
+          <h3 style="margin-bottom: 15px;">🎮 Controls & Keybinds</h3>
+          
+          <div class="settings-section">
+            <h4>Build Controls</h4>
+            <div class="setting-item">
+              <span>Simple Build Mode</span>
+              <div class="toggle-switch" id="simple-build-toggle" onclick="toggleSetting('simpleBuildMode')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+            <p class="setting-description">When enabled, one button builds all structures automatically</p>
+            
+            <div class="keybind-list">
+              <div class="keybind-item">
+                <span>Build Wall</span>
+                <button class="keybind-button" onclick="changeKeybind('buildWall')" id="key-buildWall">Q</button>
+              </div>
+              <div class="keybind-item">
+                <span>Build Floor</span>
+                <button class="keybind-button" onclick="changeKeybind('buildFloor')" id="key-buildFloor">F</button>
+              </div>
+              <div class="keybind-item">
+                <span>Build Stairs</span>
+                <button class="keybind-button" onclick="changeKeybind('buildStair')" id="key-buildStair">V</button>
+              </div>
+              <div class="keybind-item">
+                <span>Build Roof</span>
+                <button class="keybind-button" onclick="changeKeybind('buildRoof')" id="key-buildRoof">G</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4>Movement Controls</h4>
+            <div class="keybind-list">
+              <div class="keybind-item">
+                <span>Move Forward</span>
+                <button class="keybind-button" onclick="changeKeybind('moveForward')" id="key-moveForward">W</button>
+              </div>
+              <div class="keybind-item">
+                <span>Move Back</span>
+                <button class="keybind-button" onclick="changeKeybind('moveBack')" id="key-moveBack">S</button>
+              </div>
+              <div class="keybind-item">
+                <span>Move Left</span>
+                <button class="keybind-button" onclick="changeKeybind('moveLeft')" id="key-moveLeft">A</button>
+              </div>
+              <div class="keybind-item">
+                <span>Move Right</span>
+                <button class="keybind-button" onclick="changeKeybind('moveRight')" id="key-moveRight">D</button>
+              </div>
+              <div class="keybind-item">
+                <span>Sprint</span>
+                <button class="keybind-button" onclick="changeKeybind('sprint')" id="key-sprint">SHIFT</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4>Action Controls</h4>
+            <div class="keybind-list">
+              <div class="keybind-item">
+                <span>Interact</span>
+                <button class="keybind-button" onclick="changeKeybind('interact')" id="key-interact">E</button>
+              </div>
+              <div class="keybind-item">
+                <span>Reload</span>
+                <button class="keybind-button" onclick="changeKeybind('reload')" id="key-reload">R</button>
+              </div>
+              <div class="keybind-item">
+                <span>Inventory</span>
+                <button class="keybind-button" onclick="changeKeybind('inventory')" id="key-inventory">TAB</button>
+              </div>
+              <div class="keybind-item">
+                <span>Map</span>
+                <button class="keybind-button" onclick="changeKeybind('map')" id="key-map">M</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h4>Mouse Settings</h4>
+            <div class="setting-item">
+              <span>Mouse Sensitivity: <span id="sensitivity-value">0.5</span></span>
+              <input type="range" min="0.1" max="2" step="0.1" value="0.5" id="sensitivity-slider" oninput="updateSensitivity(this.value)">
+            </div>
+          </div>
+
+          <button class="reset-button" onclick="resetControls()">Reset to Default</button>
         </div>
-        <div class="setting-item">
-          <span>Enable Voice Chat</span>
-          <div class="toggle-switch" id="voice-toggle" onclick="toggleVoiceChat()"></div>
+
+        <!-- VOICE CHAT TAB -->
+        <div id="settings-voice" class="settings-panel">
+          <h3 style="margin-bottom: 15px;">🎤 Voice Chat</h3>
+          
+          <div class="warning-box">
+            <h4>⚠️ Voice Chat Safety</h4>
+            <p>Voice chat connects you with other players. Communicate respectfully and never share personal information. Parents should monitor children's online interactions.</p>
+          </div>
+
+          <div class="settings-section">
+            <div class="setting-item">
+              <span>Enable Voice Chat</span>
+              <div class="toggle-switch" id="voice-enabled-toggle" onclick="toggleSetting('voiceChatEnabled')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Who Can Talk To You</span>
+              <select id="voice-mode-select" onchange="updateVoiceMode(this.value)" class="settings-select">
+                <option value="off">Nobody (Disabled)</option>
+                <option value="friends" selected>Friends Only</option>
+                <option value="team">Team Members Only</option>
+                <option value="everyone">Everyone</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <span>Push to Talk (Press to speak)</span>
+              <div class="toggle-switch active" id="push-to-talk-toggle" onclick="toggleSetting('pushToTalk')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Voice Activation (Auto-detect)</span>
+              <div class="toggle-switch" id="voice-activation-toggle" onclick="toggleSetting('voiceActivation')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Microphone Sensitivity: <span id="mic-sensitivity-value">50%</span></span>
+              <input type="range" min="0" max="100" value="50" id="mic-sensitivity-slider" oninput="updateMicSensitivity(this.value)">
+            </div>
+
+            <div class="setting-item">
+              <span>Voice Volume: <span id="voice-volume-value">100%</span></span>
+              <input type="range" min="0" max="100" value="100" id="voice-volume-slider" oninput="updateVoiceVolume(this.value)">
+            </div>
+          </div>
+
+          <button class="test-button" onclick="testMicrophone()">🎤 Test Microphone</button>
         </div>
+
+        <!-- AUDIO TAB -->
+        <div id="settings-audio" class="settings-panel">
+          <h3 style="margin-bottom: 15px;">🔊 Audio</h3>
+          
+          <div class="settings-section">
+            <div class="setting-item">
+              <span>Master Volume: <span id="master-volume-value">70%</span></span>
+              <input type="range" min="0" max="100" value="70" id="master-volume-slider" oninput="updateMasterVolume(this.value)">
+            </div>
+
+            <div class="setting-item">
+              <span>Music Volume: <span id="music-volume-value">50%</span></span>
+              <input type="range" min="0" max="100" value="50" id="music-volume-slider" oninput="updateMusicVolume(this.value)">
+            </div>
+
+            <div class="setting-item">
+              <span>Sound Effects Volume: <span id="sfx-volume-value">70%</span></span>
+              <input type="range" min="0" max="100" value="70" id="sfx-volume-slider" oninput="updateSFXVolume(this.value)">
+            </div>
+
+            <div class="setting-item">
+              <span>Enable Sound Effects</span>
+              <div class="toggle-switch active" id="sfx-toggle" onclick="toggleSetting('soundEffects')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Enable Music</span>
+              <div class="toggle-switch active" id="music-toggle" onclick="toggleSetting('music')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRAPHICS TAB -->
+        <div id="settings-graphics" class="settings-panel">
+          <h3 style="margin-bottom: 15px;">🎨 Graphics</h3>
+          
+          <div class="settings-section">
+            <div class="setting-item">
+              <span>Graphics Quality</span>
+              <select id="graphics-quality-select" onchange="updateGraphicsQuality(this.value)" class="settings-select">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high" selected>High</option>
+                <option value="ultra">Ultra</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <span>Show FPS Counter</span>
+              <div class="toggle-switch" id="fps-toggle" onclick="toggleSetting('showFPS')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Show Ping</span>
+              <div class="toggle-switch active" id="ping-toggle" onclick="toggleSetting('showPing')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Motion Blur</span>
+              <div class="toggle-switch" id="motion-blur-toggle" onclick="toggleSetting('motionBlur')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Colorblind Mode</span>
+              <select id="colorblind-select" onchange="updateColorblindMode(this.value)" class="settings-select">
+                <option value="off" selected>Off</option>
+                <option value="protanopia">Protanopia (Red-Weak)</option>
+                <option value="deuteranopia">Deuteranopia (Green-Weak)</option>
+                <option value="tritanopia">Tritanopia (Blue-Weak)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- GAMEPLAY TAB -->
+        <div id="settings-gameplay" class="settings-panel">
+          <h3 style="margin-bottom: 15px;">🎯 Gameplay</h3>
+          
+          <div class="settings-section">
+            <h4>Build Settings</h4>
+            <div class="setting-item">
+              <span>Simple Build Mode</span>
+              <div class="toggle-switch" id="simple-build-toggle-2" onclick="toggleSetting('simpleBuildMode')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+            <p class="setting-description">Automatically select best building piece</p>
+
+            <h4 style="margin-top: 20px;">Convenience</h4>
+            <div class="setting-item">
+              <span>Auto Pickup Items</span>
+              <div class="toggle-switch active" id="auto-pickup-toggle" onclick="toggleSetting('autoPickup')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Auto Switch Weapons</span>
+              <div class="toggle-switch active" id="auto-switch-toggle" onclick="toggleSetting('autoSwitchWeapon')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Show Damage Numbers</span>
+              <div class="toggle-switch active" id="damage-numbers-toggle" onclick="toggleSetting('showDamageNumbers')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Show Kill Feed</span>
+              <div class="toggle-switch active" id="kill-feed-toggle" onclick="toggleSetting('showKillFeed')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRIVACY TAB -->
+        <div id="settings-privacy" class="settings-panel">
+          <h3 style="margin-bottom: 15px;">🔒 Privacy</h3>
+          
+          <div class="settings-section">
+            <div class="setting-item">
+              <span>Show Online Status</span>
+              <div class="toggle-switch active" id="online-toggle" onclick="toggleSetting('showOnlineStatus')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Allow Friend Requests</span>
+              <div class="toggle-switch active" id="friend-requests-toggle" onclick="toggleSetting('friendRequestsEnabled')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Allow Spectators</span>
+              <div class="toggle-switch active" id="spectators-toggle" onclick="toggleSetting('allowSpectators')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Share Stats Publicly</span>
+              <div class="toggle-switch active" id="share-stats-toggle" onclick="toggleSetting('shareStats')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Enable Text Chat</span>
+              <div class="toggle-switch active" id="chat-toggle" onclick="toggleSetting('chatEnabled')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <span>Profanity Filter</span>
+              <div class="toggle-switch active" id="profanity-toggle" onclick="toggleSetting('profanityFilter')">
+                <div class="toggle-slider"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <div class="settings-section">
-        <h3>Privacy Settings</h3>
-        <div class="setting-item">
-          <span>Show Online Status</span>
-          <div class="toggle-switch active" id="online-toggle" onclick="toggleSetting('online')"></div>
-        </div>
-        <div class="setting-item">
-          <span>Allow Friend Requests</span>
-          <div class="toggle-switch active" id="friend-requests-toggle" onclick="toggleSetting('friendRequests')"></div>
-        </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+        <button class="secondary-button" onclick="closeSettings()">Cancel</button>
+        <button class="auth-button" onclick="saveSettings()">💾 Save Settings</button>
       </div>
-
-      <button class="auth-button mt-20" onclick="saveSettings()">Save Settings</button>
     </div>
   </div>
 
@@ -2189,8 +2685,94 @@
       document.getElementById('settings-modal').classList.remove('active');
     }
 
+    // ========== SETTINGS MANAGEMENT ==========
+    let currentSettings = {
+      // Audio
+      masterVolume: 0.7,
+      musicVolume: 0.5,
+      sfxVolume: 0.7,
+      voiceVolume: 1.0,
+      soundEffects: true,
+      music: true,
+      
+      // Voice Chat
+      voiceChatEnabled: false,
+      voiceChatMode: 'friends',
+      pushToTalk: true,
+      voiceActivation: false,
+      micSensitivity: 0.5,
+      
+      // Chat
+      chatEnabled: true,
+      profanityFilter: true,
+      showTimestamps: false,
+      chatOpacity: 0.8,
+      
+      // Controls
+      keybinds: {
+        moveForward: 'w',
+        moveBack: 's',
+        moveLeft: 'a',
+        moveRight: 'd',
+        sprint: 'shift',
+        interact: 'e',
+        reload: 'r',
+        buildWall: 'q',
+        buildFloor: 'f',
+        buildStair: 'v',
+        buildRoof: 'g',
+        inventory: 'tab',
+        map: 'm'
+      },
+      mouseSensitivity: 0.5,
+      
+      // Gameplay
+      simpleBuildMode: false,
+      autoPickup: true,
+      autoSwitchWeapon: true,
+      showDamageNumbers: true,
+      showKillFeed: true,
+      
+      // Graphics
+      graphicsQuality: 'high',
+      showFPS: false,
+      showPing: true,
+      motionBlur: false,
+      colorblindMode: 'off',
+      
+      // Privacy
+      showOnlineStatus: true,
+      friendRequestsEnabled: true,
+      allowSpectators: true,
+      shareStats: true
+    };
+    
+    let waitingForKeybind = null;
+    
+    function switchSettingsTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.settings-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+      
+      // Update panels
+      document.querySelectorAll('.settings-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.getElementById('settings-' + tabName).classList.add('active');
+    }
+    
     async function loadUserSettings() {
-      if (isGuest) return;
+      if (isGuest) {
+        // Load from localStorage for guests
+        const saved = localStorage.getItem('guestSettings');
+        if (saved) {
+          currentSettings = { ...currentSettings, ...JSON.parse(saved) };
+        }
+        updateSettingsUI();
+        return;
+      }
       
       try {
         const res = await fetch('/api/auth/profile', {
@@ -2199,7 +2781,7 @@
         const data = await res.json();
         
         if (data.settings) {
-          currentSettings = data.settings;
+          currentSettings = { ...currentSettings, ...data.settings };
           updateSettingsUI();
         }
       } catch (error) {
@@ -2208,43 +2790,219 @@
     }
 
     function updateSettingsUI() {
-      document.getElementById('chat-toggle').classList.toggle('active', currentSettings.chatEnabled);
-      document.getElementById('profanity-toggle').classList.toggle('active', currentSettings.profanityFilter);
-      document.getElementById('voice-toggle').classList.toggle('active', currentSettings.voiceChatEnabled);
-      document.getElementById('online-toggle').classList.toggle('active', currentSettings.showOnlineStatus);
-      document.getElementById('friend-requests-toggle').classList.toggle('active', currentSettings.friendRequestsEnabled);
+      // Update all toggle switches
+      const toggles = {
+        'simple-build-toggle': currentSettings.simpleBuildMode,
+        'simple-build-toggle-2': currentSettings.simpleBuildMode,
+        'voice-enabled-toggle': currentSettings.voiceChatEnabled,
+        'push-to-talk-toggle': currentSettings.pushToTalk,
+        'voice-activation-toggle': currentSettings.voiceActivation,
+        'sfx-toggle': currentSettings.soundEffects,
+        'music-toggle': currentSettings.music,
+        'fps-toggle': currentSettings.showFPS,
+        'ping-toggle': currentSettings.showPing,
+        'motion-blur-toggle': currentSettings.motionBlur,
+        'auto-pickup-toggle': currentSettings.autoPickup,
+        'auto-switch-toggle': currentSettings.autoSwitchWeapon,
+        'damage-numbers-toggle': currentSettings.showDamageNumbers,
+        'kill-feed-toggle': currentSettings.showKillFeed,
+        'online-toggle': currentSettings.showOnlineStatus,
+        'friend-requests-toggle': currentSettings.friendRequestsEnabled,
+        'spectators-toggle': currentSettings.allowSpectators,
+        'share-stats-toggle': currentSettings.shareStats,
+        'chat-toggle': currentSettings.chatEnabled,
+        'profanity-toggle': currentSettings.profanityFilter
+      };
+      
+      Object.entries(toggles).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.classList.toggle('active', value);
+        }
+      });
+      
+      // Update sliders
+      updateSlider('sensitivity', currentSettings.mouseSensitivity);
+      updateSlider('mic-sensitivity', currentSettings.micSensitivity * 100);
+      updateSlider('voice-volume', currentSettings.voiceVolume * 100);
+      updateSlider('master-volume', currentSettings.masterVolume * 100);
+      updateSlider('music-volume', currentSettings.musicVolume * 100);
+      updateSlider('sfx-volume', currentSettings.sfxVolume * 100);
+      
+      // Update selects
+      setSelect('voice-mode-select', currentSettings.voiceChatMode);
+      setSelect('graphics-quality-select', currentSettings.graphicsQuality);
+      setSelect('colorblind-select', currentSettings.colorblindMode);
+      
+      // Update keybinds
+      if (currentSettings.keybinds) {
+        Object.entries(currentSettings.keybinds).forEach(([action, key]) => {
+          const btn = document.getElementById('key-' + action);
+          if (btn) {
+            btn.textContent = key.toUpperCase();
+          }
+        });
+      }
     }
-
+    
+    function updateSlider(name, value) {
+      const slider = document.getElementById(name + '-slider');
+      const display = document.getElementById(name + '-value');
+      if (slider) slider.value = value;
+      if (display) {
+        if (name === 'sensitivity') {
+          display.textContent = value.toFixed(1);
+        } else {
+          display.textContent = Math.round(value) + '%';
+        }
+      }
+    }
+    
+    function setSelect(id, value) {
+      const select = document.getElementById(id);
+      if (select) select.value = value;
+    }
+    
     function toggleSetting(setting) {
       const toggle = event.currentTarget;
-      toggle.classList.toggle('active');
+      const isActive = toggle.classList.toggle('active');
+      currentSettings[setting] = isActive;
       
-      if (setting === 'chat') currentSettings.chatEnabled = toggle.classList.contains('active');
-      if (setting === 'profanity') currentSettings.profanityFilter = toggle.classList.contains('active');
-      if (setting === 'online') currentSettings.showOnlineStatus = toggle.classList.contains('active');
-      if (setting === 'friendRequests') currentSettings.friendRequestsEnabled = toggle.classList.contains('active');
+      console.log(`Setting ${setting} = ${isActive}`);
     }
-
-    function toggleVoiceChat() {
-      const toggle = event.currentTarget;
-      if (!toggle.classList.contains('active')) {
-        if (confirm('Enable voice chat? This will allow you to communicate with other players.')) {
-          toggle.classList.add('active');
-          currentSettings.voiceChatEnabled = true;
+    
+    // ========== VOLUME CONTROLS ==========
+    function updateMasterVolume(value) {
+      currentSettings.masterVolume = value / 100;
+      document.getElementById('master-volume-value').textContent = Math.round(value) + '%';
+    }
+    
+    function updateMusicVolume(value) {
+      currentSettings.musicVolume = value / 100;
+      document.getElementById('music-volume-value').textContent = Math.round(value) + '%';
+    }
+    
+    function updateSFXVolume(value) {
+      currentSettings.sfxVolume = value / 100;
+      document.getElementById('sfx-volume-value').textContent = Math.round(value) + '%';
+    }
+    
+    function updateVoiceVolume(value) {
+      currentSettings.voiceVolume = value / 100;
+      document.getElementById('voice-volume-value').textContent = Math.round(value) + '%';
+    }
+    
+    function updateMicSensitivity(value) {
+      currentSettings.micSensitivity = value / 100;
+      document.getElementById('mic-sensitivity-value').textContent = Math.round(value) + '%';
+    }
+    
+    function updateSensitivity(value) {
+      currentSettings.mouseSensitivity = parseFloat(value);
+      document.getElementById('sensitivity-value').textContent = value;
+    }
+    
+    // ========== VOICE CHAT ==========
+    function updateVoiceMode(value) {
+      currentSettings.voiceChatMode = value;
+      console.log('Voice mode set to:', value);
+      
+      if (value === 'everyone') {
+        if (!confirm('⚠️ This will allow ANYONE to talk to you. Are you sure?')) {
+          document.getElementById('voice-mode-select').value = currentSettings.voiceChatMode;
+          return;
         }
-      } else {
-        toggle.classList.remove('active');
-        currentSettings.voiceChatEnabled = false;
       }
     }
-
-    async function saveSettings() {
-      if (isGuest) {
-        alert('Guests cannot save settings');
-        return;
-      }
+    
+    function testMicrophone() {
+      alert('🎤 Microphone Test\n\nSpeak into your microphone. If you see a green indicator, it\'s working!\n\n(Full implementation requires WebRTC)');
+      // TODO: Implement actual mic test with Web Audio API
+    }
+    
+    // ========== GRAPHICS ==========
+    function updateGraphicsQuality(value) {
+      currentSettings.graphicsQuality = value;
+      console.log('Graphics quality set to:', value);
+    }
+    
+    function updateColorblindMode(value) {
+      currentSettings.colorblindMode = value;
+      console.log('Colorblind mode set to:', value);
+      // TODO: Apply color filters
+    }
+    
+    // ========== KEYBINDINGS ==========
+    function changeKeybind(action) {
+      const button = event.currentTarget;
+      button.classList.add('waiting');
+      button.textContent = 'Press Key...';
+      waitingForKeybind = action;
       
+      // Listen for next keypress
+      const keyListener = (e) => {
+        e.preventDefault();
+        const key = e.key.toLowerCase();
+        
+        // Cancel if escape
+        if (key === 'escape') {
+          button.classList.remove('waiting');
+          button.textContent = currentSettings.keybinds[action].toUpperCase();
+          waitingForKeybind = null;
+          document.removeEventListener('keydown', keyListener);
+          return;
+        }
+        
+        // Update keybind
+        currentSettings.keybinds[action] = key;
+        button.classList.remove('waiting');
+        button.textContent = key.toUpperCase();
+        waitingForKeybind = null;
+        document.removeEventListener('keydown', keyListener);
+        
+        console.log(`Keybind ${action} set to ${key}`);
+      };
+      
+      document.addEventListener('keydown', keyListener);
+    }
+    
+    function resetControls() {
+      if (!confirm('Reset all controls to default?')) return;
+      
+      currentSettings.keybinds = {
+        moveForward: 'w',
+        moveBack: 's',
+        moveLeft: 'a',
+        moveRight: 'd',
+        sprint: 'shift',
+        interact: 'e',
+        reload: 'r',
+        buildWall: 'q',
+        buildFloor: 'f',
+        buildStair: 'v',
+        buildRoof: 'g',
+        inventory: 'tab',
+        map: 'm'
+      };
+      
+      currentSettings.mouseSensitivity = 0.5;
+      currentSettings.simpleBuildMode = false;
+      
+      updateSettingsUI();
+      alert('✅ Controls reset to default!');
+    }
+    
+    // ========== SAVE SETTINGS ==========
+    async function saveSettings() {
       try {
+        if (isGuest) {
+          // Save to localStorage for guests
+          localStorage.setItem('guestSettings', JSON.stringify(currentSettings));
+          alert('✅ Settings saved locally!');
+          closeSettings();
+          return;
+        }
+        
         const res = await fetch('/api/auth/profile', {
           method: 'PATCH',
           headers: {
@@ -2255,12 +3013,37 @@
         });
         
         if (res.ok) {
-          alert('Settings saved!');
+          alert('✅ Settings saved!');
           closeSettings();
+          
+          // Apply settings immediately
+          applySettings();
+        } else {
+          alert('❌ Failed to save settings');
         }
       } catch (error) {
         console.error('Save settings error:', error);
+        alert('❌ Error saving settings');
       }
+    }
+    
+    function applySettings() {
+      // Apply audio settings
+      if (window.audioContext) {
+        // TODO: Apply audio settings to game
+      }
+      
+      // Apply graphics settings
+      if (currentSettings.showFPS) {
+        // TODO: Show FPS counter
+      }
+      
+      // Apply keybinds to game controls
+      if (typeof keys !== 'undefined') {
+        // Keybinds will be read from currentSettings.keybinds
+      }
+      
+      console.log('Settings applied:', currentSettings);
     }
 
     // ========== GAME FUNCTIONS (simplified for now) ==========
