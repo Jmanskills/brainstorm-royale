@@ -335,132 +335,176 @@ const CharacterRenderer = {
 
   // Banana Bot (Peely-inspired)
   drawBananaBot(ctx, skin, size) {
-    // Banana body shape
-    ctx.fillStyle = skin.primary;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, size * 0.4, size * 0.6, 0, 0, Math.PI * 2);
-    ctx.fill();
+    // THICK BLACK OUTLINE
+    ctx.lineWidth = size * 0.1;
+    ctx.strokeStyle = '#000';
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
     
-    // Banana gradient
-    const gradient = ctx.createRadialGradient(-size * 0.2, -size * 0.2, 0, 0, 0, size * 0.6);
-    gradient.addColorStop(0, '#fff200');
-    gradient.addColorStop(0.7, '#ffd700');
-    gradient.addColorStop(1, '#ffaa00');
-    ctx.fillStyle = gradient;
-    ctx.fill();
+    // Cute rounded banana body
+    const bodyGradient = ctx.createLinearGradient(0, -size*0.5, 0, size*0.6);
+    bodyGradient.addColorStop(0, '#fff200');
+    bodyGradient.addColorStop(0.5, '#ffd700');
+    bodyGradient.addColorStop(1, '#ffaa00');
     
-    // Brown spots
-    ctx.fillStyle = skin.accent;
+    ctx.fillStyle = bodyGradient;
     ctx.beginPath();
-    ctx.arc(-size * 0.15, -size * 0.3, size * 0.08, 0, Math.PI * 2);
-    ctx.arc(size * 0.2, -size * 0.1, size * 0.06, 0, Math.PI * 2);
-    ctx.arc(-size * 0.25, size * 0.1, size * 0.07, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Banana peel on top
-    ctx.fillStyle = '#ffd700';
-    ctx.strokeStyle = skin.accent;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-size * 0.1, -size * 0.6);
-    ctx.quadraticCurveTo(-size * 0.3, -size * 0.8, -size * 0.4, -size * 0.6);
-    ctx.quadraticCurveTo(-size * 0.35, -size * 0.5, -size * 0.2, -size * 0.55);
-    ctx.closePath();
+    ctx.ellipse(0, 0, size * 0.45, size * 0.55, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     
-    // Robot face
+    // Brown banana spots (cute style)
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.ellipse(-size * 0.15, -size * 0.2, size * 0.06, size * 0.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(size * 0.18, 0, size * 0.05, size * 0.06, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Simple oval eyes
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.arc(-size * 0.15, -size * 0.15, size * 0.08, 0, Math.PI * 2);
-    ctx.arc(size * 0.15, -size * 0.15, size * 0.08, 0, Math.PI * 2);
+    ctx.ellipse(-size * 0.15, -size * 0.08, size * 0.08, size * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(size * 0.15, -size * 0.08, size * 0.08, size * 0.15, 0, 0, Math.PI * 2);
     ctx.fill();
     
     // Happy smile
     ctx.strokeStyle = '#000';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = size * 0.06;
     ctx.beginPath();
-    ctx.arc(0, 0, size * 0.2, 0.2, Math.PI - 0.2);
+    ctx.arc(0, size * 0.05, size * 0.18, 0.1, Math.PI - 0.1);
     ctx.stroke();
     
-    // Arms
-    ctx.fillStyle = skin.primary;
+    // Short stubby banana legs
+    const legGradient = ctx.createLinearGradient(0, size*0.4, 0, size*0.6);
+    legGradient.addColorStop(0, '#ffd700');
+    legGradient.addColorStop(1, '#ffaa00');
+    
+    ctx.fillStyle = legGradient;
+    ctx.lineWidth = size * 0.08;
+    
+    // Left leg
     ctx.beginPath();
-    ctx.ellipse(-size * 0.45, 0, size * 0.12, size * 0.25, -0.3, 0, Math.PI * 2);
-    ctx.ellipse(size * 0.45, 0, size * 0.12, size * 0.25, 0.3, 0, Math.PI * 2);
+    this.roundRect(ctx, -size*0.28, size*0.4, size*0.25, size*0.18, size*0.1);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Right leg
+    ctx.beginPath();
+    this.roundRect(ctx, size*0.03, size*0.4, size*0.25, size*0.18, size*0.1);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Glossy highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.beginPath();
+    ctx.ellipse(-size*0.12, -size*0.25, size*0.2, size*0.25, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Screen panel (robot element)
-    ctx.fillStyle = skin.screen;
-    ctx.fillRect(-size * 0.15, size * 0.15, size * 0.3, size * 0.15);
-    ctx.strokeStyle = '#000';
-    ctx.strokeRect(-size * 0.15, size * 0.15, size * 0.3, size * 0.15);
+    // Banana peel stem (cute)
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.ellipse(0, -size*0.55, size*0.08, size*0.12, 0, 0, Math.PI);
+    ctx.fill();
   },
 
   // Pug Bot
   drawPugBot(ctx, skin, size) {
-    // Round body/head
-    ctx.fillStyle = skin.primary;
+    // THICK BLACK OUTLINE
+    ctx.lineWidth = size * 0.1;
+    ctx.strokeStyle = '#000';
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    
+    // Cute rounded pug body with gradient
+    const bodyGradient = ctx.createLinearGradient(0, -size*0.4, 0, size*0.5);
+    bodyGradient.addColorStop(0, skin.primary);
+    bodyGradient.addColorStop(0.5, skin.secondary);
+    bodyGradient.addColorStop(1, this.darkenColor(skin.secondary, 0.8));
+    
+    ctx.fillStyle = bodyGradient;
     ctx.beginPath();
-    ctx.arc(0, 0, size * 0.45, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, size * 0.45, size * 0.5, 0, 0, Math.PI * 2);
     ctx.fill();
+    ctx.stroke();
     
-    const gradient = ctx.createRadialGradient(-size * 0.2, -size * 0.2, 0, 0, 0, size * 0.45);
-    gradient.addColorStop(0, skin.primary);
-    gradient.addColorStop(1, skin.secondary);
-    ctx.fillStyle = gradient;
-    ctx.fill();
-    
-    // Floppy dog ears
+    // Floppy dog ears (cute!)
     ctx.fillStyle = skin.secondary;
+    ctx.lineWidth = size * 0.08;
+    
+    // Left ear
     ctx.beginPath();
-    ctx.ellipse(-size * 0.4, -size * 0.3, size * 0.2, size * 0.3, -0.5, 0, Math.PI * 2);
-    ctx.ellipse(size * 0.4, -size * 0.3, size * 0.2, size * 0.3, 0.5, 0, Math.PI * 2);
+    ctx.ellipse(-size * 0.42, -size * 0.25, size * 0.18, size * 0.28, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Right ear
+    ctx.beginPath();
+    ctx.ellipse(size * 0.42, -size * 0.25, size * 0.18, size * 0.28, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Face mask (pug coloring) - darker snout area
+    ctx.fillStyle = '#2a2a2a';
+    ctx.beginPath();
+    ctx.ellipse(0, -size * 0.05, size * 0.3, size * 0.22, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Face mask (pug coloring)
-    ctx.fillStyle = skin.accent;
-    ctx.beginPath();
-    ctx.ellipse(0, -size * 0.1, size * 0.35, size * 0.25, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Big cute eyes
-    ctx.fillStyle = '#fff';
-    ctx.beginPath();
-    ctx.arc(-size * 0.15, -size * 0.15, size * 0.12, 0, Math.PI * 2);
-    ctx.arc(size * 0.15, -size * 0.15, size * 0.12, 0, Math.PI * 2);
-    ctx.fill();
-    
+    // Simple cute eyes (oval style)
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.arc(-size * 0.15, -size * 0.13, size * 0.07, 0, Math.PI * 2);
-    ctx.arc(size * 0.15, -size * 0.13, size * 0.07, 0, Math.PI * 2);
+    ctx.ellipse(-size * 0.15, -size * 0.12, size * 0.08, size * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(size * 0.15, -size * 0.12, size * 0.08, size * 0.15, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Nose
+    // Eye shine
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.beginPath();
+    ctx.ellipse(-size * 0.17, -size * 0.15, size * 0.03, size * 0.05, 0, 0, Math.PI * 2);
+    ctx.ellipse(size * 0.13, -size * 0.15, size * 0.03, size * 0.05, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Cute nose
     ctx.fillStyle = '#000';
     ctx.beginPath();
-    ctx.arc(0, -size * 0.05, size * 0.08, 0, Math.PI * 2);
+    ctx.ellipse(0, -size * 0.02, size * 0.06, size * 0.05, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Tongue (cute!)
+    // Tongue (adorable!)
     ctx.fillStyle = '#ff69b4';
     ctx.beginPath();
-    ctx.ellipse(0, size * 0.08, size * 0.1, size * 0.06, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, size * 0.08, size * 0.08, size * 0.05, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Robot badge on chest
-    ctx.fillStyle = skin.screen;
-    ctx.fillRect(-size * 0.12, size * 0.25, size * 0.24, size * 0.15);
-    ctx.strokeStyle = skin.accent;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-size * 0.12, size * 0.25, size * 0.24, size * 0.15);
+    // Short stubby pug legs
+    const legGradient = ctx.createLinearGradient(0, size*0.4, 0, size*0.6);
+    legGradient.addColorStop(0, skin.secondary);
+    legGradient.addColorStop(1, this.darkenColor(skin.secondary, 0.7));
     
-    // Legs
-    ctx.fillStyle = skin.primary;
+    ctx.fillStyle = legGradient;
+    ctx.lineWidth = size * 0.08;
+    
+    // Left leg
     ctx.beginPath();
-    ctx.ellipse(-size * 0.25, size * 0.5, size * 0.12, size * 0.18, 0, 0, Math.PI * 2);
-    ctx.ellipse(size * 0.25, size * 0.5, size * 0.12, size * 0.18, 0, 0, Math.PI * 2);
+    this.roundRect(ctx, -size*0.28, size*0.4, size*0.25, size*0.18, size*0.1);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Right leg
+    ctx.beginPath();
+    this.roundRect(ctx, size*0.03, size*0.4, size*0.25, size*0.18, size*0.1);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Glossy highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.beginPath();
+    ctx.ellipse(-size*0.12, -size*0.3, size*0.18, size*0.22, 0, 0, Math.PI * 2);
     ctx.fill();
   },
 
