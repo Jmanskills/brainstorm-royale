@@ -62,7 +62,7 @@ app.get('/api/health', (req, res) => {
 const MAPS = {
   classic: {
     name: 'Brain Island',
-    size: 6000,  // MASSIVE 6000x6000 MAP!
+    size: 5000,  // EVEN BIGGER MAP for more POIs!
     playerSize: 30,
     theme: 'fortnite',
     triviaStations: 30,
@@ -726,74 +726,6 @@ io.on('connection', (socket) => {
     // Initialize game
     game.state = 'playing';
     game.startTime = Date.now();
-    
-    // ========== BATTLE BUS SYSTEM ==========
-    const angle = Math.random() * Math.PI * 2;
-    const distance = game.map.size * 0.7;
-    game.battleBus = {
-      x: game.map.size/2 + Math.cos(angle) * distance,
-      y: game.map.size/2 + Math.sin(angle) * distance,
-      angle: angle + Math.PI, // Fly toward center
-      speed: 20,
-      active: true,
-      startTime: Date.now(),
-      duration: 30000 // 30 seconds to jump
-    };
-    
-    // Put all players IN the bus
-    game.players.forEach(player => {
-      player.inBus = true;
-      player.canJump = true;
-      player.x = game.battleBus.x;
-      player.y = game.battleBus.y;
-      player.falling = false;
-      player.gliderOpen = false;
-      player.fallSpeed = 0;
-    });
-    
-    // Update bus position every tick
-    game.busInterval = setInterval(() => {
-      if (!game || !game.battleBus || !game.battleBus.active || !game.map) {
-        if (game && game.busInterval) clearInterval(game.busInterval);
-        return;
-      }
-      
-      try {
-        // Move bus forward
-        game.battleBus.x += Math.cos(game.battleBus.angle) * game.battleBus.speed;
-        game.battleBus.y += Math.sin(game.battleBus.angle) * game.battleBus.speed;
-        
-        // End bus after duration or if it leaves map
-        const timeElapsed = Date.now() - game.battleBus.startTime;
-        const mapSize = game.map.size || 6000;
-        const outOfBounds = game.battleBus.x < -500 || game.battleBus.x > mapSize + 500 ||
-                            game.battleBus.y < -500 || game.battleBus.y > mapSize + 500;
-        
-        if (timeElapsed > game.battleBus.duration || outOfBounds) {
-          game.battleBus.active = false;
-          clearInterval(game.busInterval);
-          
-          // Auto-drop remaining players
-          if (game.players) {
-            game.players.forEach(p => {
-              if (p.inBus && p.isAlive) {
-                p.inBus = false;
-                p.falling = true;
-                p.jumpTime = Date.now();
-                p.x = game.battleBus.x;
-                p.y = game.battleBus.y;
-              }
-            });
-          }
-          
-          console.log('🚌 Battle bus finished - auto-dropped remaining players');
-        }
-      } catch (error) {
-        console.error('❌ Battle bus error:', error);
-        if (game && game.busInterval) clearInterval(game.busInterval);
-      }
-    }, 1000/60);
-    
     game.triviaStations = generateTriviaStations(game.map);
     game.powerups = generatePowerups(game.map);
     game.weaponSpawns = generateWeaponSpawns(game.map);
@@ -812,8 +744,7 @@ io.on('connection', (socket) => {
       vehicles: game.vehicles,
       buildings: game.buildings, // SEND BUILDINGS!
       chests: game.chests, // SEND CHESTS!
-      activeEvents: game.activeEvents,
-      battleBus: game.battleBus // SEND BATTLE BUS!
+      activeEvents: game.activeEvents
     });
     
     startGameLoop(gameId);
@@ -1312,29 +1243,6 @@ io.on('connection', (socket) => {
     if (data.mouseY !== undefined) player.mouseY = data.mouseY;
   });
   
-  // ========== JUMP FROM BATTLE BUS ==========
-  socket.on('jump-from-bus', () => {
-    const gameId = playerGames.get(socket.id);
-    if (!gameId) return;
-    
-    const game = games.get(gameId);
-    if (!game || game.state !== 'playing') return;
-    
-    const player = game.players.get(socket.id);
-    if (!player || !player.isAlive || !player.inBus) return;
-    
-    // Jump!
-    player.inBus = false;
-    player.x = game.battleBus.x;
-    player.y = game.battleBus.y;
-    player.falling = true;
-    player.gliderOpen = false;
-    player.fallSpeed = 0;
-    player.jumpTime = Date.now();
-    
-    console.log(`🪂 ${player.username} jumped from battle bus at (${Math.floor(player.x)}, ${Math.floor(player.y)})`);
-  });
-  
   socket.on('player-shoot', (data) => {
     const gameId = playerGames.get(socket.id);
     if (!gameId) return;
@@ -1713,12 +1621,6 @@ function startGameLoop(gameId) {
       game.state = 'ended';
       clearInterval(interval);
       
-      // Clean up battle bus interval
-      if (game.busInterval) {
-        clearInterval(game.busInterval);
-        game.busInterval = null;
-      }
-      
       const winner = alivePlayers[0] || null;
       
       // Save game results to database
@@ -1745,52 +1647,6 @@ function startGameLoop(gameId) {
       }, 30000);
     }
     
-    // ========== FALLING/GLIDER PHYSICS ==========
-    if (game && game.players && game.map) {
-      game.players.forEach(player => {
-        if (player.falling && player.isAlive) {
-          // Accelerate fall speed (gravity)
-          player.fallSpeed = Math.min(15, (player.fallSpeed || 0) + 0.5);
-          
-          // Auto-open glider after 2 seconds OR when falling fast
-          const timeSinceJump = Date.now() - (player.jumpTime || 0);
-          if (!player.gliderOpen && (timeSinceJump > 2000 || player.fallSpeed > 10)) {
-            player.gliderOpen = true;
-            player.fallSpeed = 3; // Slow to glider speed
-          }
-          
-          // Apply fall movement
-          if (player.gliderOpen) {
-            // Slow gliding fall
-            player.y += 3;
-            // Allow slight horizontal control
-            if (player.mouseX && player.mouseY) {
-              const dx = (player.mouseX - player.x) / 100;
-              const dy = (player.mouseY - player.y) / 100;
-              player.x += Math.max(-2, Math.min(2, dx));
-              player.y += Math.max(-1, Math.min(1, dy));
-            }
-          } else {
-            // Fast free fall
-            player.y += player.fallSpeed;
-          }
-          
-          // Land on ground (map bottom)
-          const mapSize = game.map.size || 6000;
-          if (player.y >= mapSize - 100) {
-            player.y = mapSize - 100;
-            player.falling = false;
-            player.gliderOpen = false;
-            player.fallSpeed = 0;
-            console.log(`🎯 ${player.username} landed at (${Math.floor(player.x)}, ${Math.floor(player.y)})`);
-          }
-          
-          // Keep within map bounds horizontally
-          player.x = Math.max(0, Math.min(mapSize, player.x));
-        }
-      });
-    }
-    
     // Broadcast game state
     io.to(gameId).emit('game-update', {
       players: Array.from(game.players.values()),
@@ -1804,8 +1660,7 @@ function startGameLoop(gameId) {
       stormCenter: game.stormCenter,
       stormPhase: game.stormPhase,
       killFeed: game.killFeed,
-      triviaStations: game.triviaStations,
-      battleBus: game.battleBus // Include battle bus in updates
+      triviaStations: game.triviaStations
     });
     
   }, 1000 / TICK_RATE);
@@ -2052,7 +1907,7 @@ const BUILDING_TEMPLATES = {
       { x: 45, y: 0, size: 20, floor: 1 },
       { x: 135, y: 40, size: 20, floor: 1 }
     ],
-    chestSpawns: 2
+    chestSpawns: 4
   },
   
   warehouse: {
@@ -2073,7 +1928,7 @@ const BUILDING_TEMPLATES = {
       { x: 30, y: 0, size: 25, floor: 0 },
       { x: 170, y: 0, size: 25, floor: 0 }
     ],
-    chestSpawns: 2
+    chestSpawns: 5
   },
   
   tower: {
@@ -2099,7 +1954,7 @@ const BUILDING_TEMPLATES = {
       { x: 15, y: 0, size: 20, floor: 2 },
       { x: 85, y: 0, size: 20, floor: 2 }
     ],
-    chestSpawns: 1
+    chestSpawns: 3
   },
   
   shop: {
@@ -2140,7 +1995,7 @@ const BUILDING_TEMPLATES = {
       { x: 15, y: 0, size: 35, floor: 0 },
       { x: 95, y: 0, size: 35, floor: 0 }
     ],
-    chestSpawns: 1
+    chestSpawns: 3
   },
   
   apartment: {
@@ -2174,7 +2029,7 @@ const BUILDING_TEMPLATES = {
       { x: 30, y: 0, size: 20, floor: 2 },
       { x: 150, y: 0, size: 20, floor: 2 }
     ],
-    chestSpawns: 2
+    chestSpawns: 6
   }
 };
 
@@ -2301,33 +2156,28 @@ function createBuildingFromTemplate(template, x, y, poiName = null) {
 function generateChests(map, buildings) {
   const chests = [];
   
-  // Spawn chests INSIDE buildings - MUCH FEWER!
+  // Spawn chests INSIDE buildings!
   if (buildings && buildings.length > 0) {
     buildings.forEach(building => {
-      // MAX 2 chests per building (reduced from 6+)
-      const numChests = Math.min(2, building.chestSpawns || 0);
+      const numChests = building.chestSpawns || Math.floor(Math.random() * 3);
       
-      // Only 50% of buildings have chests
-      if (Math.random() > 0.5 && numChests > 0) {
-        const actualChests = Math.random() > 0.7 ? numChests : Math.max(1, numChests - 1);
+      for (let i = 0; i < numChests; i++) {
+        // Pick random room
+        if (!building.rooms || building.rooms.length === 0) continue;
+        const room = building.rooms[Math.floor(Math.random() * building.rooms.length)];
         
-        for (let i = 0; i < actualChests; i++) {
-          // Pick random room
-          if (!building.rooms || building.rooms.length === 0) continue;
-          const room = building.rooms[Math.floor(Math.random() * building.rooms.length)];
-          
-          // Place chest in random position within room
-          const chestX = room.worldX + Math.random() * (room.width - 40) + 20;
-          const chestY = room.worldY + Math.random() * (room.height - 40) + 20;
-          
-          // Determine rarity
-          const rarity = Math.random();
-          let chestType = 'common';
-          let lootQuality = 1;
-          
-          if (rarity > 0.95) {
-            chestType = 'legendary';
-            lootQuality = 4;
+        // Place chest in random position within room
+        const chestX = room.worldX + Math.random() * (room.width - 40) + 20;
+        const chestY = room.worldY + Math.random() * (room.height - 40) + 20;
+        
+        // Determine rarity
+        const rarity = Math.random();
+        let chestType = 'common';
+        let lootQuality = 1;
+        
+        if (rarity > 0.95) {
+          chestType = 'legendary';
+          lootQuality = 4;
         } else if (rarity > 0.85) {
           chestType = 'epic';
           lootQuality = 3;
