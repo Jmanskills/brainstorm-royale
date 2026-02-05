@@ -1,53 +1,43 @@
-// BrainStorm Royale - Unique Cartoony Robot/AI Character System
-// All characters are robot variants with different themes and personalities!
+// BrainStorm Royale - POLYTORIA STYLE! 🎮
+// Blocky, colorful, fun characters!
 
 const CharacterRenderer = {
-  // All skins are Robot/AI variants
+  // Polytoria-style blocky skins
   skins: {
     // Default & Common Robots
     default: { 
-      name: 'BrainBot Classic',
+      name: 'Classic Bot',
       primary: '#667eea', 
       secondary: '#764ba2', 
-      accent: '#fff', 
-      screen: '#00ffff',
-      antenna: true,
-      antennaColor: '#ffff00',
-      eyes: 'happy',
-      special: null
+      accent: '#FFD700',
+      face: '😊',
+      style: 'blocky'
     },
     rookie: { 
-      name: 'Rookie Bot',
+      name: 'Noob Bot',
       primary: '#3498db', 
       secondary: '#2980b9', 
-      accent: '#ecf0f1', 
-      screen: '#00ff00',
-      antenna: true,
-      antennaColor: '#00ff00',
-      eyes: 'determined',
-      special: null
+      accent: '#00ff00',
+      face: '😃',
+      style: 'blocky'
     },
     
-    // Special Themed Robots (User Requested)
+    // Fun Themed Bots
     peely: {
       name: 'Banana Bot',
-      primary: '#fff200',
-      secondary: '#ffd700',
+      primary: '#FFEB3B',
+      secondary: '#FFC107',
       accent: '#8B4513',
-      screen: '#000',
-      antenna: false,
-      special: 'banana',
-      eyes: 'silly'
+      face: '🍌',
+      style: 'blocky'
     },
     pug: {
       name: 'Pug Bot',
       primary: '#D2B48C',
       secondary: '#8B7355',
-      accent: '#000',
-      screen: '#8B4513',
-      antenna: false,
-      special: 'dog_ears',
-      eyes: 'cute'
+      accent: '#FF69B4',
+      face: '🐶',
+      style: 'blocky'
     },
     
     // Awesome Themed Robots
@@ -183,46 +173,119 @@ const CharacterRenderer = {
     }
     
     // Shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
     ctx.beginPath();
     ctx.ellipse(0, size * 0.55, size * 0.5, size * 0.15, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw based on special type
-    if (skin.special === 'banana') {
-      this.drawBananaBot(ctx, skin, size);
-    } else if (skin.special === 'dog_ears') {
-      this.drawPugBot(ctx, skin, size);
-    } else {
-      this.drawStandardBot(ctx, skin, size);
-    }
+    // Draw BLOCKY character!
+    this.drawBlockyCharacter(ctx, skin, size);
     
     ctx.restore();
   },
   
   // Alias for render (used in game)
   render(ctx, skinId, size) {
-    // This is called from the game with translate already applied
     const skin = this.skins[skinId] || this.skins.default;
     
     // Shadow
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
     ctx.beginPath();
     ctx.ellipse(0, size * 0.55, size * 0.5, size * 0.15, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw based on special type
-    if (skin.special === 'banana') {
-      this.drawBananaBot(ctx, skin, size);
-    } else if (skin.special === 'dog_ears') {
-      this.drawPugBot(ctx, skin, size);
-    } else {
-      this.drawStandardBot(ctx, skin, size);
-    }
+    // Draw BLOCKY character!
+    this.drawBlockyCharacter(ctx, skin, size);
   },
 
-  // Standard robot design
+  // POLYTORIA STYLE - Blocky Character! 🎲
+  drawBlockyCharacter(ctx, skin, size) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#000';
+    ctx.lineJoin = 'miter';
+    
+    // === HEAD (Cube) ===
+    const headSize = size * 0.35;
+    const headY = -size * 0.3;
+    
+    // Head gradient (3D effect)
+    const headGradient = ctx.createLinearGradient(-headSize, headY-headSize, headSize, headY+headSize);
+    headGradient.addColorStop(0, this.lightenColor(skin.primary, 1.3));
+    headGradient.addColorStop(0.5, skin.primary);
+    headGradient.addColorStop(1, this.darkenColor(skin.primary, 0.7));
+    
+    // Draw head cube
+    ctx.fillStyle = headGradient;
+    ctx.fillRect(-headSize, headY-headSize, headSize*2, headSize*2);
+    ctx.strokeRect(-headSize, headY-headSize, headSize*2, headSize*2);
+    
+    // Face (emoji style!)
+    ctx.font = `${size*0.5}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(skin.face || '😊', 0, headY);
+    
+    // === BODY (Rectangle) ===
+    const bodyWidth = size * 0.4;
+    const bodyHeight = size * 0.45;
+    const bodyY = size * 0.05;
+    
+    const bodyGradient = ctx.createLinearGradient(-bodyWidth, bodyY, bodyWidth, bodyY+bodyHeight);
+    bodyGradient.addColorStop(0, this.lightenColor(skin.secondary, 1.2));
+    bodyGradient.addColorStop(0.5, skin.secondary);
+    bodyGradient.addColorStop(1, this.darkenColor(skin.secondary, 0.8));
+    
+    ctx.fillStyle = bodyGradient;
+    ctx.fillRect(-bodyWidth, bodyY, bodyWidth*2, bodyHeight);
+    ctx.strokeRect(-bodyWidth, bodyY, bodyWidth*2, bodyHeight);
+    
+    // Accent stripe on body
+    ctx.fillStyle = skin.accent;
+    ctx.fillRect(-bodyWidth, bodyY+bodyHeight*0.3, bodyWidth*2, bodyHeight*0.2);
+    
+    // === ARMS (Rectangles) ===
+    const armWidth = size * 0.15;
+    const armHeight = size * 0.35;
+    
+    // Left arm
+    ctx.fillStyle = skin.primary;
+    ctx.fillRect(-bodyWidth-armWidth, bodyY+size*0.05, armWidth, armHeight);
+    ctx.strokeRect(-bodyWidth-armWidth, bodyY+size*0.05, armWidth, armHeight);
+    
+    // Right arm
+    ctx.fillRect(bodyWidth, bodyY+size*0.05, armWidth, armHeight);
+    ctx.strokeRect(bodyWidth, bodyY+size*0.05, armWidth, armHeight);
+    
+    // === LEGS (Rectangles) ===
+    const legWidth = size * 0.18;
+    const legHeight = size * 0.35;
+    const legsY = bodyY + bodyHeight;
+    
+    ctx.fillStyle = this.darkenColor(skin.primary, 0.9);
+    
+    // Left leg
+    ctx.fillRect(-bodyWidth*0.6, legsY, legWidth, legHeight);
+    ctx.strokeRect(-bodyWidth*0.6, legsY, legWidth, legHeight);
+    
+    // Right leg  
+    ctx.fillRect(bodyWidth*0.6-legWidth, legsY, legWidth, legHeight);
+    ctx.strokeRect(bodyWidth*0.6-legWidth, legsY, legWidth, legHeight);
+  },
+
+  // Helper: Lighten color
+  lightenColor(color, factor) {
+    const hex = color.replace('#', '');
+    const r = Math.min(255, Math.floor(parseInt(hex.substr(0, 2), 16) * factor));
+    const g = Math.min(255, Math.floor(parseInt(hex.substr(2, 2), 16) * factor));
+    const b = Math.min(255, Math.floor(parseInt(hex.substr(4, 2), 16) * factor));
+    return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+  },
+
+  // OLD CHARACTER RENDERERS (keeping for backward compatibility)
   drawStandardBot(ctx, skin, size) {
+    // Fallback to blocky style
+    this.drawBlockyCharacter(ctx, skin, size);
+  },
     // === CUTE ROUNDED BODY (like uploaded image!) ===
     const bodyGradient = ctx.createLinearGradient(0, -size * 0.4, 0, size * 0.5);
     bodyGradient.addColorStop(0, skin.primary);

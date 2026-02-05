@@ -3847,25 +3847,27 @@
           ctx.fillRect(x + 6, y + 6, w, h);
           
           // === MAIN BUILDING STRUCTURE ===
-          let buildingColor = '#8B7355';
-          if (building.name?.includes('Shop')) buildingColor = '#A0C4DE';
-          else if (building.name?.includes('Tower')) buildingColor = '#607D8B';
-          else if (building.name?.includes('Warehouse')) buildingColor = '#78909C';
-          else if (building.name?.includes('Restaurant')) buildingColor = '#FF7043';
-          else if (building.name?.includes('Apartment')) buildingColor = '#FFD54F';
-          else if (building.name?.includes('House')) buildingColor = '#A1887F';
+          // POLYTORIA STYLE - BRIGHT COLORFUL BUILDINGS! 🎨
+          let buildingColor = '#FF69B4'; // Default pink!
+          if (building.name?.includes('Shop')) buildingColor = '#87CEEB'; // Sky blue
+          else if (building.name?.includes('Tower')) buildingColor = '#9370DB'; // Purple
+          else if (building.name?.includes('Warehouse')) buildingColor = '#FFD700'; // Gold
+          else if (building.name?.includes('Restaurant')) buildingColor = '#FF6347'; // Tomato red
+          else if (building.name?.includes('Apartment')) buildingColor = '#FFD54F'; // Yellow
+          else if (building.name?.includes('House')) buildingColor = '#98FB98'; // Pale green
           
-          // Building gradient for 3D effect
+          // Bright gradient for 3D effect
           const gradient = ctx.createLinearGradient(x, y, x, y + h);
-          gradient.addColorStop(0, buildingColor);
-          gradient.addColorStop(1, darkenColor(buildingColor, 0.7));
+          gradient.addColorStop(0, lightenColor(buildingColor, 1.2));
+          gradient.addColorStop(0.5, buildingColor);
+          gradient.addColorStop(1, darkenColor(buildingColor, 0.8));
           
           ctx.fillStyle = gradient;
           ctx.fillRect(x, y, w, h);
           
-          // Building outline
+          // Thick black outline (Polytoria style!)
           ctx.strokeStyle = '#000';
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 4;
           ctx.strokeRect(x, y, w, h);
           
           // === DRAW ROOMS (if player is inside or nearby) ===
@@ -4113,6 +4115,14 @@
       return `rgb(${r}, ${g}, ${b})`;
     }
     
+    function lightenColor(color, factor) {
+      const hex = color.replace('#', '');
+      const r = Math.min(255, Math.floor(parseInt(hex.substr(0, 2), 16) * factor));
+      const g = Math.min(255, Math.floor(parseInt(hex.substr(2, 2), 16) * factor));
+      const b = Math.min(255, Math.floor(parseInt(hex.substr(4, 2), 16) * factor));
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+    
     // Helper function for distance calculation
     function distance(x1, y1, x2, y2) {
       return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
@@ -4123,40 +4133,41 @@
       
       const mapSize = gameState.map.size;
       
-      // Base grass gradient
+      // POLYTORIA STYLE - BRIGHT LIME GREEN GRASS! 🌈
       const grassGradient = ctx.createLinearGradient(0, 0, mapSize, mapSize);
-      grassGradient.addColorStop(0, '#7EC850');
-      grassGradient.addColorStop(0.5, '#6DBE45');
-      grassGradient.addColorStop(1, '#5FB041');
+      grassGradient.addColorStop(0, '#7FFF00'); // Bright lime
+      grassGradient.addColorStop(0.5, '#32CD32'); // Lime green
+      grassGradient.addColorStop(1, '#00FF00'); // Pure green
       ctx.fillStyle = grassGradient;
       ctx.fillRect(-camera.x, -camera.y, mapSize, mapSize);
       
-      // Fortnite-style grass patches
-      const patchSize = 120;
-      const darkGrass = '#5AAA3A';
-      const lightGrass = '#8FD460';
+      // Colorful patches (Polytoria style!)
+      const patchSize = 100;
+      const colors = ['#FFD700', '#FF69B4', '#87CEEB', '#FF6347', '#9370DB', '#00FA9A'];
       
-      for (let x = 0; x < mapSize; x += patchSize) {
-        for (let y = 0; y < mapSize; y += patchSize) {
+      for (let x = 0; x < mapSize; x += patchSize*2) {
+        for (let y = 0; y < mapSize; y += patchSize*2) {
           const px = x - camera.x;
           const py = y - camera.y;
           
           // Only draw visible patches
           if (px > -patchSize && px < canvas.width + patchSize &&
               py > -patchSize && py < canvas.height + patchSize) {
-            const seed = x * 73 + y * 37;
-            if (seed % 3 !== 0) {
-              ctx.fillStyle = (seed % 2 === 0) ? darkGrass : lightGrass;
-              ctx.globalAlpha = 0.25;
-              ctx.fillRect(px, py, patchSize * 0.9, patchSize * 0.9);
+            const seed = Math.floor((x + y) / 100);
+            if (seed % 5 === 0) {
+              ctx.fillStyle = colors[seed % colors.length];
+              ctx.globalAlpha = 0.15;
+              ctx.beginPath();
+              ctx.arc(px + patchSize/2, py + patchSize/2, patchSize*0.4, 0, Math.PI*2);
+              ctx.fill();
               ctx.globalAlpha = 1;
             }
           }
         }
       }
       
-      // Trees (consistent positions)
-      const treeCount = 80;
+      // Fun decorative trees (simple blocky style!)
+      const treeCount = 60;
       for (let i = 0; i < treeCount; i++) {
         const seed = i * 12345;
         const treeX = (seed * 9301 + 49297) % mapSize;
@@ -4165,12 +4176,24 @@
         const py = treeY - camera.y;
         
         if (px > -50 && px < canvas.width + 50 && py > -50 && py < canvas.height + 50) {
-          drawTree(px, py);
+          // Blocky tree!
+          ctx.fillStyle = '#8B4513'; // Brown trunk
+          ctx.fillRect(px-5, py-10, 10, 25);
+          
+          ctx.fillStyle = '#228B22'; // Green leaves
+          ctx.beginPath();
+          ctx.arc(px, py-20, 20, 0, Math.PI*2);
+          ctx.fill();
+          
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 2;
+          ctx.stroke();
         }
       }
       
-      // Rocks
+      // Colorful rocks/decorations
       const rockCount = 40;
+      const rockColors = ['#FFD700', '#FF69B4', '#87CEEB', '#FF6347'];
       for (let i = 0; i < rockCount; i++) {
         const seed = i * 54321;
         const rockX = (seed * 9301 + 49297) % mapSize;
