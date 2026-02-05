@@ -3596,10 +3596,20 @@
       console.log(`📦 Chests: ${gameState.chests.length}`);
     }
     
+    // Prevent duplicate event listeners
+    let controlsSetup = false;
+    
     function setupGameControls() {
+      if (controlsSetup) return;
+      controlsSetup = true;
+      console.log('🎮 Controls setup');
+      
       // Keyboard controls
       window.addEventListener('keydown', (e) => {
         keys[e.key.toLowerCase()] = true;
+        if (['w','a','s','d'].includes(e.key.toLowerCase())) {
+          console.log('🔑', e.key);
+        }
         
         // E key interactions
         if (e.key.toLowerCase() === 'e') {
@@ -3648,6 +3658,9 @@
     
     function sendInputs() {
       if (!socket || !gameState) return;
+      
+      const moving = keys['w'] || keys['s'] || keys['a'] || keys['d'];
+      if (moving && Math.random() < 0.1) console.log('📡 Moving');
       
       // Send current input state to server
       socket.emit('player-input', {
