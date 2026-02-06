@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrainStorm Royale 3D - Polytoria Style!</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
+      background: #000;
+    }
+    
+    #game-canvas-3d {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+    
+    /* 2D UI OVERLAY */
+    #ui-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    
+    /* HUD */
+    #hud {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px 30px;
+      border-radius: 15px;
+      border: 3px solid #FFD700;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
+    
+    #controls-help {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+    
+    #controls-help h3 {
+      color: #FFD700;
+      margin-bottom: 10px;
+    }
+    
+    .key {
+      display: inline-block;
+      background: #667eea;
+      padding: 5px 10px;
+      border-radius: 5px;
+      margin: 0 5px;
+      font-weight: bold;
+    }
+    
+    #loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      z-index: 9999;
+    }
+    
+    #loading h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+      text-shadow: 3px 3px 0px rgba(0,0,0,0.3);
+    }
+    
+    #loading p {
+      font-size: 24px;
+      margin: 10px 0;
+    }
+    
+    .spinner {
+      border: 8px solid rgba(255, 255, 255, 0.3);
+      border-top: 8px solid white;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      animation: spin 1s linear infinite;
+      margin: 20px 0;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    #minimap {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 200px;
+      height: 200px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 3px solid #FFD700;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading">
+    <h1>🎮 BrainStorm Royale 3D</h1>
+    <div class="spinner"></div>
+    <p>Loading 3D World...</p>
+    <p style="font-size: 16px; opacity: 0.8;">Polytoria Style! 🌈</p>
+  </div>
+
+  <!-- 3D Canvas Container -->
+  <div id="game-canvas-3d"></div>
+  
+  <!-- 2D UI Overlay -->
+  <div id="ui-overlay">
+    <!-- Controls Help -->
+    <div id="controls-help">
+      <h3>🎮 CONTROLS</h3>
+      <div><span class="key">W A S D</span> Move</div>
+      <div><span class="key">MOUSE</span> Look Around</div>
+      <div><span class="key">SPACE</span> Jump</div>
+      <div><span class="key">ESC</span> Menu</div>
+    </div>
+    
+    <!-- HUD -->
+    <div id="hud">
+      <div>❤️ Health: <span id="health">100</span></div>
+      <div>🎯 Position: <span id="position">0, 0, 0</span></div>
+    </div>
+    
+    <!-- Minimap -->
+    <canvas id="minimap" width="200" height="200"></canvas>
+  </div>
+
+  <!-- Load Three.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <!-- Load our 3D game engine -->
+  <script src="game-3d.js"></script>
+  
+  <!-- Initialize -->
+  <script>
+    // Wait for Three.js to load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        // Hide loading screen
+        document.getElementById('loading').style.display = 'none';
+        
+        // Start 3D game!
+        if (typeof init3DGame !== 'undefined') {
+          init3DGame();
+          console.log('🎮 3D Game started!');
+          
+          // Update HUD
+          setInterval(() => {
+            if (window.game3D && window.game3D.player) {
+              const pos = window.game3D.player.position;
+              document.getElementById('position').textContent = 
+                `${Math.floor(pos.x)}, ${Math.floor(pos.y)}, ${Math.floor(pos.z)}`;
+            }
+          }, 100);
+          
+          // Draw minimap
+          const minimap = document.getElementById('minimap');
+          const ctx = minimap.getContext('2d');
+          
+          function updateMinimap() {
+            if (!window.game3D || !window.game3D.player) return;
+            
+            ctx.fillStyle = '#7FFF00';
+            ctx.fillRect(0, 0, 200, 200);
+            
+            // Draw player
+            const pos = window.game3D.player.position;
+            const mapX = 100 + pos.x / 5;
+            const mapY = 100 + pos.z / 5;
+            
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(mapX, mapY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw direction arrow
+            const rot = window.game3D.player.rotation.y;
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(mapX, mapY);
+            ctx.lineTo(mapX + Math.sin(rot) * 10, mapY - Math.cos(rot) * 10);
+            ctx.stroke();
+            
+            requestAnimationFrame(updateMinimap);
+          }
+          updateMinimap();
+        } else {
+          alert('Failed to load 3D engine!');
+        }
+      }, 1000);
+    });
+    
+    // ESC key to show cursor
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Escape') {
+        // Toggle pointer lock
+      }
+    });
+  </script>
+</body>
+</html>
