@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BrainStorm Royale</title>
+  <title>Pixelio</title>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="character-renderer.js"></script>
+  <script src="game-3d-integrated.js"></script>
   <style>
     * {
       margin: 0;
@@ -1124,6 +1126,19 @@
     #lobby-screen, #game-screen, #postgame-screen {
       display: none;
     }
+    
+    #game-3d-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+    }
+    
+    #game-3d-container canvas {
+      display: block;
+    }
 
     .hidden {
       display: none !important;
@@ -1280,7 +1295,7 @@
   <!-- ========== AUTH SCREEN ========== -->
   <div id="auth-screen">
     <div class="auth-container">
-      <h1 class="auth-title">🧠 BrainStorm Royale</h1>
+      <h1 class="auth-title">🎮 Pixelio</h1>
       <p class="auth-subtitle">Battle royale meets trivia!</p>
 
       <div class="auth-tabs">
@@ -1357,7 +1372,7 @@
 
     <!-- Main Menu -->
     <div class="menu-container">
-      <h1 class="game-title">BrainStorm Royale</h1>
+      <h1 class="game-title">Pixelio</h1>
       <p class="game-subtitle">⚡ Battle Royale meets Trivia ⚡</p>
 
       <div id="user-info" class="user-info">
@@ -1908,7 +1923,11 @@
   <!-- Simplified Lobby/Game screens for now - keeping your existing ones -->
   <div id="lobby-screen"></div>
   <div id="game-screen">
-    <canvas id="game-canvas"></canvas>
+    <!-- 3D GAME CONTAINER -->
+    <div id="game-3d-container"></div>
+    
+    <!-- Keep 2D canvas hidden as fallback -->
+    <canvas id="game-canvas" style="display: none;"></canvas>
     
     <!-- Chat Window (in-game) -->
     <div class="chat-window" id="game-chat">
@@ -3564,33 +3583,56 @@
     });
     
     // ========== GAME INITIALIZATION ==========
+    let game3D = null; // Global 3D game instance
+    
     function initGame(data) {
-      console.log('Initializing game...', data);
-      
-      // Setup canvas
-      canvas = document.getElementById('game-canvas');
-      ctx = canvas.getContext('2d');
-      
-      // Set canvas size
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      console.log('🎮 Initializing 3D game...', data);
       
       // Store game state
       gameState = data;
       gameState.bullets = gameState.bullets || [];
       gameState.buildings = gameState.buildings || [];
-      gameState.chests = gameState.chests || []; // Add chests!
+      gameState.chests = gameState.chests || [];
       
-      // Setup controls
-      setupGameControls();
+      // Try to initialize 3D with retry logic
+      let retryCount = 0;
+      const maxRetries = 20;
       
-      // Start input loop (send inputs to server)
-      setInterval(sendInputs, 1000/60); // 60 FPS
+      function tryInit3D() {
+        console.log(`🔄 Attempt ${retryCount + 1}/${maxRetries} to initialize 3D...`);
+        
+        if (typeof THREE !== 'undefined' && typeof BrainStormGame3D !== 'undefined') {
+          try {
+            game3D = new BrainStormGame3D(gameState, socket);
+            console.log('✅ 3D Engine started successfully!');
+            
+            // Start input loop
+            setInterval(() => {
+              if (game3D) {
+                game3D.sendInputs();
+              }
+            }, 1000/60);
+            
+          } catch (error) {
+            console.error('❌ Error starting 3D engine:', error);
+            alert('3D engine failed to start: ' + error.message);
+          }
+        } else {
+          // Not ready yet, retry
+          retryCount++;
+          if (retryCount < maxRetries) {
+            console.log(`⏳ Three.js or BrainStormGame3D not ready yet. THREE: ${typeof THREE}, BrainStormGame3D: ${typeof BrainStormGame3D}`);
+            setTimeout(tryInit3D, 250);
+          } else {
+            console.error('❌ Failed to load 3D engine after multiple retries!');
+            console.error(`THREE: ${typeof THREE}, BrainStormGame3D: ${typeof BrainStormGame3D}`);
+            alert('Failed to load 3D engine. Check console for errors.');
+          }
+        }
+      }
       
-      // Start render loop
-      requestAnimationFrame(gameLoop);
+      tryInit3D();
       
-      console.log('✅ Game initialized!');
       console.log(`📍 Map size: ${gameState.map.size}`);
       console.log(`🏠 Buildings: ${gameState.buildings.length}`);
       console.log(`📦 Chests: ${gameState.chests.length}`);
