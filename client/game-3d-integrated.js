@@ -40,7 +40,8 @@ class BrainStormGame3D {
       0.1,
       2000
     );
-    this.camera.position.set(0, 50, 100);
+    this.camera.position.set(0, 100, 200);
+    this.camera.lookAt(0, 0, 0); // Look at center of map
     
     // Create renderer
     const container = document.getElementById('game-3d-container');
@@ -371,18 +372,41 @@ class BrainStormGame3D {
   }
   
   setupControls() {
+    console.log('🎮 Setting up 3D controls...');
+    
     document.addEventListener('keydown', (e) => {
       switch(e.code) {
-        case 'KeyW': this.controls.forward = true; break;
-        case 'KeyS': this.controls.backward = true; break;
-        case 'KeyA': this.controls.left = true; break;
-        case 'KeyD': this.controls.right = true; break;
+        case 'KeyW': 
+          this.controls.forward = true;
+          console.log('W pressed - moving forward');
+          break;
+        case 'KeyS': 
+          this.controls.backward = true;
+          console.log('S pressed - moving backward');
+          break;
+        case 'KeyA': 
+          this.controls.left = true;
+          console.log('A pressed - moving left');
+          break;
+        case 'KeyD': 
+          this.controls.right = true;
+          console.log('D pressed - moving right');
+          break;
         case 'Space': 
           if (this.canJump) {
             this.velocity.y = 25;
             this.canJump = false;
+            console.log('SPACE pressed - jumping');
           }
           e.preventDefault();
+          break;
+        case 'Escape':
+          console.log('ESC pressed - returning to menu');
+          // Return to menu
+          if (this.socket) {
+            this.socket.emit('leave-game');
+          }
+          window.location.reload();
           break;
       }
     });
