@@ -2118,8 +2118,11 @@
       
       socket.on('game-started', (data) => {
         console.log('Game starting!', data);
-        // Hide lobby, show game screen
+        // Hide ALL other screens
+        document.getElementById('menu-screen').style.display = 'none';
         document.getElementById('lobby-screen').style.display = 'none';
+        document.getElementById('auth-screen').style.display = 'none';
+        // Show ONLY game screen
         document.getElementById('game-screen').style.display = 'block';
         // Initialize game canvas and start gameplay
         try {
