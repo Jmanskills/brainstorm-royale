@@ -4751,12 +4751,40 @@
       });
       
       socket.on('player-died', (data) => {
+        console.log('💀 You died!', data);
+        
+        // Clean up 3D engine
+        if (game3D) {
+          game3D.destroy();
+          game3D = null;
+        }
+        
+        // Hide game screen
+        document.getElementById('game-screen').style.display = 'none';
+        
+        // Show death message
         alert(`💀 You were eliminated! Killed by: ${data.killerName}`);
+        
+        // Return to menu
+        showMenuScreen();
       });
       
       socket.on('game-ended', (data) => {
-        alert(`🎉 Game Over! Winner: ${data.winner}`);
+        console.log('🎮 Game ended!', data);
+        
+        // Clean up 3D engine
+        if (game3D) {
+          game3D.destroy();
+          game3D = null;
+        }
+        
+        // Hide game screen
         document.getElementById('game-screen').style.display = 'none';
+        
+        // Show winner alert
+        alert(`🎉 Game Over! Winner: ${data.winner}`);
+        
+        // Return to menu
         showMenuScreen();
       });
     }
