@@ -29,16 +29,18 @@ class Pixelio3D {
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     this.camera.position.set(0, 20, 40);
     
-    // Renderer
-    const canvas = document.getElementById('game-canvas');
-    if (!canvas) {
-      console.error('❌ No canvas found!');
-      return;
-    }
+    // CREATE OWN CANVAS - don't use existing one
+    const canvas = document.createElement('canvas');
+    canvas.id = 'pixelio-3d-canvas';
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100vw';
+    canvas.style.height = '100vh';
+    canvas.style.zIndex = '10';
+    document.body.appendChild(canvas);
     
-    // Change canvas to be our 3D canvas
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    console.log('✅ Created own 3D canvas');
     
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
