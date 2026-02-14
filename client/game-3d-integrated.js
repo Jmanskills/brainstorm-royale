@@ -30,33 +30,21 @@ class BrainStormGame3D {
     
     // Create scene
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x87CEEB);
-    this.scene.fog = new THREE.Fog(0x87CEEB, 100, 500);
+    this.scene.background = new THREE.Color(0x87CEEB); // Sky blue!
+    this.scene.fog = new THREE.Fog(0x87CEEB, 200, 1000);
     
-    // Camera - positioned to see everything
+    // Create camera
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000
+      2000
     );
-    this.camera.position.set(0, 20, 40);
-    this.camera.lookAt(0, 0, 0);
-    
-    // Camera control variables
-    this.cameraAngle = { horizontal: 0, vertical: 0.3 };
-    this.cameraDistance = 40;
-    this.isDragging = false;
-    this.previousMouse = { x: 0, y: 0 };
-    
-    console.log('📹 Camera positioned at:', this.camera.position);
+    this.camera.position.set(0, 100, 200);
+    this.camera.lookAt(0, 0, 0); // Look at center of map
     
     // Create renderer
     const container = document.getElementById('game-3d-container');
-    if (!container) {
-      console.error('❌ game-3d-container not found!');
-      return;
-    }
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
@@ -476,17 +464,17 @@ class BrainStormGame3D {
   updateCamera() {
     if (!this.localPlayer) return;
     
-    // Camera follow like in working test
-    const playerPos = this.localPlayer.position;
+    // Third-person camera
+    const distance = 80;
+    const height = 50;
     
-    const targetX = playerPos.x + this.cameraDistance * Math.sin(this.cameraAngle.horizontal) * Math.cos(this.cameraAngle.vertical);
-    const targetY = playerPos.y + this.cameraDistance * Math.sin(this.cameraAngle.vertical) + 10;
-    const targetZ = playerPos.z + this.cameraDistance * Math.cos(this.cameraAngle.horizontal) * Math.cos(this.cameraAngle.vertical);
+    const targetPos = this.localPlayer.position.clone();
+    const cameraPos = targetPos.clone();
+    cameraPos.y += height;
+    cameraPos.z += distance;
     
-    this.camera.position.x = targetX;
-    this.camera.position.y = targetY;
-    this.camera.position.z = targetZ;
-    this.camera.lookAt(playerPos.x, playerPos.y + 10, playerPos.z);
+    this.camera.position.lerp(cameraPos, 0.1);
+    this.camera.lookAt(targetPos.clone().add(new THREE.Vector3(0, 10, 0)));
   }
   
   animate() {

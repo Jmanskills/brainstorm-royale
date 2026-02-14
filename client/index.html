@@ -7,8 +7,7 @@
   <title>Pixelio</title>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <!-- character-renderer.js removed - using 3D engine instead -->
-  <script src="game-3d-integrated.js"></script>
+  <script src="pixelio-3d-simple.js"></script>
   <style>
     * {
       margin: 0;
@@ -3590,7 +3589,7 @@
     let game3D = null; // Global 3D game instance
     
     function initGame(data) {
-      console.log('🎮 Initializing 3D game...', data);
+      console.log('🎮 Initializing game...', data);
       
       // Store game state
       gameState = data;
@@ -3598,44 +3597,19 @@
       gameState.buildings = gameState.buildings || [];
       gameState.chests = gameState.chests || [];
       
-      // Try to initialize 3D with retry logic
-      let retryCount = 0;
-      const maxRetries = 20;
-      
-      function tryInit3D() {
-        console.log(`🔄 Attempt ${retryCount + 1}/${maxRetries} to initialize 3D...`);
-        
-        if (typeof THREE !== 'undefined' && typeof BrainStormGame3D !== 'undefined') {
-          try {
-            game3D = new BrainStormGame3D(gameState, socket);
-            console.log('✅ 3D Engine started successfully!');
-            
-            // Start input loop
-            setInterval(() => {
-              if (game3D) {
-                game3D.sendInputs();
-              }
-            }, 1000/60);
-            
-          } catch (error) {
-            console.error('❌ Error starting 3D engine:', error);
-            alert('3D engine failed to start: ' + error.message);
-          }
-        } else {
-          // Not ready yet, retry
-          retryCount++;
-          if (retryCount < maxRetries) {
-            console.log(`⏳ Three.js or BrainStormGame3D not ready yet. THREE: ${typeof THREE}, BrainStormGame3D: ${typeof BrainStormGame3D}`);
-            setTimeout(tryInit3D, 250);
-          } else {
-            console.error('❌ Failed to load 3D engine after multiple retries!');
-            console.error(`THREE: ${typeof THREE}, BrainStormGame3D: ${typeof BrainStormGame3D}`);
-            alert('Failed to load 3D engine. Check console for errors.');
-          }
+      // Initialize SIMPLE 3D Engine
+      if (typeof THREE !== 'undefined' && typeof Pixelio3D !== 'undefined') {
+        try {
+          game3D = new Pixelio3D();
+          game3D.setMyPlayer(socket.id);
+          game3D.createBuildings(gameState.buildings, gameState.map.size);
+          console.log('✅ Simple 3D Engine started!');
+        } catch (error) {
+          console.error('❌ 3D Error:', error);
         }
+      } else {
+        console.error('❌ THREE or Pixelio3D not loaded!');
       }
-      
-      tryInit3D();
       
       console.log(`📍 Map size: ${gameState.map.size}`);
       console.log(`🏠 Buildings: ${gameState.buildings.length}`);
@@ -4743,7 +4717,13 @@
         if (data.vehicles) gameState.vehicles = data.vehicles;
         if (data.bullets) gameState.bullets = data.bullets;
         if (data.buildings) gameState.buildings = data.buildings;
-        if (data.chests) gameState.chests = data.chests; // Update chests!
+        if (data.chests) gameState.chests = data.chests;
+        
+        // UPDATE 3D ENGINE!
+        if (game3D && data.players) {
+          gameState.players = data.players; // Make sure gameState has players
+          game3D.updateFromServer(gameState);
+        }
       });
       
       socket.on('chest-opened', (data) => {
