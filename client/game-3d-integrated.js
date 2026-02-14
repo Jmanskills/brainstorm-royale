@@ -349,12 +349,18 @@ class BrainStormGame3D {
   }
   
   updatePlayers() {
-    if (!this.gameState || !this.gameState.players) return;
+    if (!this.gameState || !this.gameState.players) {
+      console.log('⚠️ No game state or players yet');
+      return;
+    }
+    
+    console.log(`👥 Updating ${this.gameState.players.length} players`);
     
     // Update or create players
     this.gameState.players.forEach(playerData => {
       if (!this.players.has(playerData.id)) {
         // Create new player
+        console.log(`🎮 Creating player: ${playerData.username} at (${playerData.x}, ${playerData.y})`);
         const playerMesh = this.createPlayer(playerData);
         this.players.set(playerData.id, playerMesh);
         
@@ -362,6 +368,7 @@ class BrainStormGame3D {
         if (playerData.id === this.socket.id) {
           this.localPlayer = playerMesh;
           this.canJump = true;
+          console.log('✅ LOCAL PLAYER CREATED!', playerData);
         }
       } else {
         // Update existing player
@@ -481,19 +488,23 @@ class BrainStormGame3D {
   }
   
   updateCamera() {
-    if (!this.localPlayer) return;
+    if (!this.localPlayer) {
+      // No player yet, keep default camera position
+      return;
+    }
     
-    // Third-person camera
-    const distance = 80;
-    const height = 50;
+    // Third-person camera that follows player
+    const distance = 200; // Further back so you see more
+    const height = 150; // Higher up
     
     const targetPos = this.localPlayer.position.clone();
     const cameraPos = targetPos.clone();
     cameraPos.y += height;
     cameraPos.z += distance;
     
+    // Smooth camera movement
     this.camera.position.lerp(cameraPos, 0.1);
-    this.camera.lookAt(targetPos.clone().add(new THREE.Vector3(0, 10, 0)));
+    this.camera.lookAt(targetPos.clone().add(new THREE.Vector3(0, 20, 0)));
   }
   
   animate() {
