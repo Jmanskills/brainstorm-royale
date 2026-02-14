@@ -104,6 +104,19 @@ class Pixelio3D {
       this.cameraDist = Math.max(10, Math.min(100, this.cameraDist));
     });
     
+    // WASD controls - send to server!
+    this.keys = {};
+    
+    document.addEventListener('keydown', (e) => {
+      this.keys[e.key.toLowerCase()] = true;
+    });
+    
+    document.addEventListener('keyup', (e) => {
+      this.keys[e.key.toLowerCase()] = false;
+    });
+    
+    console.log('✅ Controls setup');
+    
     // Resize
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -236,6 +249,20 @@ class Pixelio3D {
   
   setMyPlayer(playerId) {
     this.myPlayerId = playerId;
+  }
+  
+  // Send WASD inputs to server
+  sendInputs(socket) {
+    if (!socket) return;
+    
+    socket.emit('player-input', {
+      up: this.keys['w'] || false,
+      down: this.keys['s'] || false,
+      left: this.keys['a'] || false,
+      right: this.keys['d'] || false,
+      mouseX: 0,
+      mouseY: 0
+    });
   }
   
   createBuildings(buildings, mapSize) {
