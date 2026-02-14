@@ -31,25 +31,43 @@ class BrainStormGame3D {
     // Create scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87CEEB); // Sky blue!
-    this.scene.fog = new THREE.Fog(0x87CEEB, 200, 1000);
+    this.scene.fog = new THREE.Fog(0x87CEEB, 500, 2000);
     
-    // Create camera
+    // Create camera - POSITIONED TO SEE EVERYTHING
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      2000
+      5000
     );
-    this.camera.position.set(0, 100, 200);
-    this.camera.lookAt(0, 0, 0); // Look at center of map
+    // Position camera HIGH and looking DOWN
+    this.camera.position.set(0, 500, 500);
+    this.camera.lookAt(0, 0, 0);
+    
+    console.log('📹 Camera positioned at:', this.camera.position);
     
     // Create renderer
     const container = document.getElementById('game-3d-container');
+    if (!container) {
+      console.error('❌ game-3d-container not found!');
+      return;
+    }
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(this.renderer.domElement);
+    
+    console.log('✅ Renderer created');
+    
+    // ADD TEST CUBE AT CENTER - YOU WILL SEE THIS!
+    const testCube = new THREE.Mesh(
+      new THREE.BoxGeometry(100, 100, 100),
+      new THREE.MeshLambertMaterial({ color: 0xFF0000 }) // RED
+    );
+    testCube.position.set(0, 50, 0); // At center, raised
+    this.scene.add(testCube);
+    console.log('🔴 RED TEST CUBE added at center - YOU SHOULD SEE THIS!');
     
     // Lighting
     this.setupLighting();
@@ -70,6 +88,7 @@ class BrainStormGame3D {
     this.animate();
     
     console.log('✅ 3D Engine initialized!');
+    console.log('📊 Scene has', this.scene.children.length, 'objects');
   }
   
   setupLighting() {
