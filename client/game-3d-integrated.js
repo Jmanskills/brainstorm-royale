@@ -31,43 +31,25 @@ class BrainStormGame3D {
     // Create scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87CEEB); // Sky blue!
-    this.scene.fog = new THREE.Fog(0x87CEEB, 500, 2000);
+    this.scene.fog = new THREE.Fog(0x87CEEB, 200, 1000);
     
-    // Create camera - POSITIONED TO SEE EVERYTHING
+    // Create camera
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      5000
+      2000
     );
-    // Position camera HIGH and looking DOWN
-    this.camera.position.set(0, 500, 500);
-    this.camera.lookAt(0, 0, 0);
-    
-    console.log('📹 Camera positioned at:', this.camera.position);
+    this.camera.position.set(0, 100, 200);
+    this.camera.lookAt(0, 0, 0); // Look at center of map
     
     // Create renderer
     const container = document.getElementById('game-3d-container');
-    if (!container) {
-      console.error('❌ game-3d-container not found!');
-      return;
-    }
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(this.renderer.domElement);
-    
-    console.log('✅ Renderer created');
-    
-    // ADD TEST CUBE AT CENTER - YOU WILL SEE THIS!
-    const testCube = new THREE.Mesh(
-      new THREE.BoxGeometry(100, 100, 100),
-      new THREE.MeshLambertMaterial({ color: 0xFF0000 }) // RED
-    );
-    testCube.position.set(0, 50, 0); // At center, raised
-    this.scene.add(testCube);
-    console.log('🔴 RED TEST CUBE added at center - YOU SHOULD SEE THIS!');
     
     // Lighting
     this.setupLighting();
@@ -88,7 +70,6 @@ class BrainStormGame3D {
     this.animate();
     
     console.log('✅ 3D Engine initialized!');
-    console.log('📊 Scene has', this.scene.children.length, 'objects');
   }
   
   setupLighting() {
@@ -349,18 +330,12 @@ class BrainStormGame3D {
   }
   
   updatePlayers() {
-    if (!this.gameState || !this.gameState.players) {
-      console.log('⚠️ No game state or players yet');
-      return;
-    }
-    
-    console.log(`👥 Updating ${this.gameState.players.length} players`);
+    if (!this.gameState || !this.gameState.players) return;
     
     // Update or create players
     this.gameState.players.forEach(playerData => {
       if (!this.players.has(playerData.id)) {
         // Create new player
-        console.log(`🎮 Creating player: ${playerData.username} at (${playerData.x}, ${playerData.y})`);
         const playerMesh = this.createPlayer(playerData);
         this.players.set(playerData.id, playerMesh);
         
@@ -368,7 +343,6 @@ class BrainStormGame3D {
         if (playerData.id === this.socket.id) {
           this.localPlayer = playerMesh;
           this.canJump = true;
-          console.log('✅ LOCAL PLAYER CREATED!', playerData);
         }
       } else {
         // Update existing player
@@ -488,23 +462,19 @@ class BrainStormGame3D {
   }
   
   updateCamera() {
-    if (!this.localPlayer) {
-      // No player yet, keep default camera position
-      return;
-    }
+    if (!this.localPlayer) return;
     
-    // Third-person camera that follows player
-    const distance = 200; // Further back so you see more
-    const height = 150; // Higher up
+    // Third-person camera
+    const distance = 80;
+    const height = 50;
     
     const targetPos = this.localPlayer.position.clone();
     const cameraPos = targetPos.clone();
     cameraPos.y += height;
     cameraPos.z += distance;
     
-    // Smooth camera movement
     this.camera.position.lerp(cameraPos, 0.1);
-    this.camera.lookAt(targetPos.clone().add(new THREE.Vector3(0, 20, 0)));
+    this.camera.lookAt(targetPos.clone().add(new THREE.Vector3(0, 10, 0)));
   }
   
   animate() {
