@@ -3591,6 +3591,14 @@
     function initGame(data) {
       console.log('🎮 Initializing game...', data);
       
+      // HIDE ALL MENU SCREENS!
+      document.getElementById('menu-screen').style.display = 'none';
+      document.getElementById('lobby-screen').style.display = 'none';
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'none'; // Hide 2D canvas too
+      
+      console.log('🙈 All menu screens hidden');
+      
       // Store game state
       gameState = data;
       gameState.bullets = gameState.bullets || [];
@@ -3614,9 +3622,11 @@
           
         } catch (error) {
           console.error('❌ 3D Error:', error);
+          alert('3D Error: ' + error.message);
         }
       } else {
         console.error('❌ THREE or Pixelio3D not loaded!');
+        alert('THREE or Pixelio3D not loaded! Check console.');
       }
       
       console.log(`📍 Map size: ${gameState.map.size}`);

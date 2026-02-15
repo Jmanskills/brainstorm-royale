@@ -37,16 +37,19 @@ class Pixelio3D {
     canvas.style.left = '0';
     canvas.style.width = '100vw';
     canvas.style.height = '100vh';
-    canvas.style.zIndex = '10';
+    canvas.style.zIndex = '999999'; // SUPER HIGH Z-INDEX
+    canvas.style.pointerEvents = 'auto'; // Make sure it receives clicks
     document.body.appendChild(canvas);
     
-    console.log('✅ Created own 3D canvas');
+    console.log('✅ Created own 3D canvas with z-index 999999');
+    console.log('Canvas element:', canvas);
     
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     
     console.log('✅ Renderer created');
+    console.log('Renderer domElement:', this.renderer.domElement);
     
     // Lighting
     const ambient = new THREE.AmbientLight(0xffffff, 0.6);
