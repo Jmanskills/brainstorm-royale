@@ -111,14 +111,22 @@ class Pixelio3D {
     this.keys = {};
     
     document.addEventListener('keydown', (e) => {
-      this.keys[e.key.toLowerCase()] = true;
+      const key = e.key.toLowerCase();
+      if (['w', 'a', 's', 'd'].includes(key)) {
+        this.keys[key] = true;
+        console.log('⌨️ Key pressed:', key);
+      }
     });
     
     document.addEventListener('keyup', (e) => {
-      this.keys[e.key.toLowerCase()] = false;
+      const key = e.key.toLowerCase();
+      if (['w', 'a', 's', 'd'].includes(key)) {
+        this.keys[key] = false;
+        console.log('⌨️ Key released:', key);
+      }
     });
     
-    console.log('✅ Controls setup');
+    console.log('✅ Controls setup - WASD ready!');
     
     // Resize
     window.addEventListener('resize', () => {
@@ -256,16 +264,26 @@ class Pixelio3D {
   
   // Send WASD inputs to server
   sendInputs(socket) {
-    if (!socket) return;
+    if (!socket) {
+      console.warn('⚠️ No socket in sendInputs!');
+      return;
+    }
     
-    socket.emit('player-input', {
+    const input = {
       up: this.keys['w'] || false,
       down: this.keys['s'] || false,
       left: this.keys['a'] || false,
       right: this.keys['d'] || false,
       mouseX: 0,
       mouseY: 0
-    });
+    };
+    
+    // Debug: log when keys are pressed
+    if (input.up || input.down || input.left || input.right) {
+      console.log('📤 Sending input:', input);
+    }
+    
+    socket.emit('player-input', input);
   }
   
   createBuildings(buildings, mapSize) {
