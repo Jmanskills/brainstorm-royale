@@ -154,13 +154,25 @@ class Pixelio3D {
       if (!this.playerMeshes[player.id]) {
         // Create new player
         this.playerMeshes[player.id] = this.createPlayer(player);
-        console.log('Created player:', player.username);
+        console.log('✅ Created player:', player.username, 'at', player.x, player.y);
       }
       
       // Update position
       const mesh = this.playerMeshes[player.id];
+      const oldX = mesh.position.x;
+      const oldZ = mesh.position.z;
+      
       mesh.position.x = player.x - gameState.map.size / 2;
       mesh.position.z = player.y - gameState.map.size / 2;
+      
+      // Log if MY player moved
+      if (player.id === this.myPlayerId && (oldX !== mesh.position.x || oldZ !== mesh.position.z)) {
+        console.log('🏃 MY PLAYER MOVED!', {
+          from: {x: oldX, z: oldZ},
+          to: {x: mesh.position.x, z: mesh.position.z},
+          serverPos: {x: player.x, y: player.y}
+        });
+      }
       
       // Update rotation based on velocity
       if (player.velocityX || player.velocityY) {
