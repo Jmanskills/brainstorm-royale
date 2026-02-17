@@ -4826,17 +4826,9 @@
     let selectedSkin = 'default';
     
     function loadSkinSelector() {
-      const skinGrid = document.getElementById('skin-grid');
-      if (!skinGrid) {
-        console.warn('Skin grid not found');
-        return;
-      }
-      
-      if (typeof CharacterRenderer === 'undefined') {
-        console.warn('CharacterRenderer not loaded yet, retrying in 500ms...');
-        setTimeout(loadSkinSelector, 500);
-        return;
-      }
+      // Disabled - using 3D engine now
+      console.log('Skin selector disabled - using 3D characters');
+    }
       
       const popularSkins = ['default', 'peely', 'pug', 'cyber_ninja', 'galaxy', 'lava', 'ice', 'golden'];
       const ownedSkins = currentUser?.inventory?.ownedSkins || ['default'];
