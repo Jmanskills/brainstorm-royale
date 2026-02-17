@@ -23,11 +23,11 @@ class Pixelio3D {
     // Scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x87CEEB);
-    this.scene.fog = new THREE.Fog(0x87CEEB, 100, 500);
+    this.scene.fog = new THREE.Fog(0x87CEEB, 1000, 8000); // Further fog
     
     // Camera
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera.position.set(0, 20, 40);
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+    this.camera.position.set(0, 100, 200); // Start higher to see more
     
     // CREATE OWN CANVAS - don't use existing one
     const canvas = document.createElement('canvas');
@@ -60,17 +60,17 @@ class Pixelio3D {
     sun.castShadow = true;
     this.scene.add(sun);
     
-    // Ground
+    // Ground - MATCH MAP SIZE!
     const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(500, 500),
+      new THREE.PlaneGeometry(6000, 6000), // Bigger than 5000 map
       new THREE.MeshLambertMaterial({ color: 0x7FFF00 })
     );
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     this.scene.add(ground);
     
-    // Grid
-    const grid = new THREE.GridHelper(500, 100, 0x000000, 0x333333);
+    // Grid - MATCH MAP SIZE!
+    const grid = new THREE.GridHelper(6000, 120, 0x000000, 0x333333);
     this.scene.add(grid);
     
     console.log('✅ World created');
