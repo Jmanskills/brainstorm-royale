@@ -22,6 +22,8 @@ class Pixelio3D {
   init() {
     console.log('🎨 Starting 3D initialization...');
     
+    let canvas; // Declare outside try block
+    
     try {
       // Scene
       this.scene = new THREE.Scene();
@@ -35,7 +37,7 @@ class Pixelio3D {
       console.log('✅ Camera created');
       
       // CREATE OWN CANVAS
-      const canvas = document.createElement('canvas');
+      canvas = document.createElement('canvas');
       canvas.id = 'pixelio-3d-canvas';
       canvas.style.position = 'fixed';
       canvas.style.top = '0';
