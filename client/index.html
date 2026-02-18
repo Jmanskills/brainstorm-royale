@@ -7,7 +7,7 @@
   <title>Pixelio</title>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="pixelio-3d-simple.js"></script>
+  <script src="pixelio-3d-v2.js"></script>
   <style>
     * {
       margin: 0;
@@ -4737,10 +4737,9 @@
         if (data.buildings) gameState.buildings = data.buildings;
         if (data.chests) gameState.chests = data.chests;
         
-        // UPDATE 3D ENGINE!
-        if (game3D && data.players) {
-          gameState.players = data.players; // Make sure gameState has players
-          game3D.updateFromServer(gameState);
+        // UPDATE 3D ENGINE WITH NEW V2!
+        if (game3D && data.players && gameState.map) {
+          game3D.updatePlayers(data.players, gameState.map.size);
         }
       });
       

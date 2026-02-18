@@ -153,22 +153,13 @@ class Pixelio3D {
   
   // Update from server data
   updateFromServer(gameState) {
-    console.log('🔄 UPDATE CALLED');
-    
-    if (!gameState || !gameState.players) {
-      console.warn('⚠️ NO GAMESTATE OR PLAYERS!');
-      return;
-    }
-    
-    console.log('✅ Got', gameState.players.length, 'players');
+    if (!gameState || !gameState.players) return;
     
     const currentPlayers = new Set();
     
     // Update/create players
     gameState.players.forEach(player => {
       currentPlayers.add(player.id);
-      
-      console.log(`Player ${player.username}: x=${player.x} y=${player.y} vx=${player.velocityX} vy=${player.velocityY}`);
       
       if (!this.playerMeshes[player.id]) {
         // Create new player
@@ -184,11 +175,13 @@ class Pixelio3D {
       mesh.position.x = player.x - gameState.map.size / 2;
       mesh.position.z = player.y - gameState.map.size / 2;
       
-      // Log ALL movements
-      if (oldX !== mesh.position.x || oldZ !== mesh.position.z) {
-        console.log(`🏃 ${player.username} MOVED!`);
-      } else {
-        console.log(`⏸️ ${player.username} not moving`);
+      // Log if MY player moved
+      if (player.id === this.myPlayerId && (oldX !== mesh.position.x || oldZ !== mesh.position.z)) {
+        console.log('🏃 MY PLAYER MOVED!', {
+          from: {x: oldX, z: oldZ},
+          to: {x: mesh.position.x, z: mesh.position.z},
+          serverPos: {x: player.x, y: player.y}
+        });
       }
       
       // Update rotation based on velocity
@@ -307,20 +300,9 @@ class Pixelio3D {
       mouseY: 0
     };
     
-    // LOCAL MOVEMENT TEST - BYPASS SERVER!
+    // Debug: log when keys are pressed
     if (input.up || input.down || input.left || input.right) {
       console.log('📤 Sending input:', input);
-      
-      // Move player LOCALLY right now!
-      if (this.myPlayerId && this.playerMeshes[this.myPlayerId]) {
-        const mesh = this.playerMeshes[this.myPlayerId];
-        const speed = 2;
-        if (input.up) mesh.position.z -= speed;
-        if (input.down) mesh.position.z += speed;
-        if (input.left) mesh.position.x -= speed;
-        if (input.right) mesh.position.x += speed;
-        console.log('🎮 LOCAL MOVE! New position:', mesh.position.x, mesh.position.z);
-      }
     }
     
     socket.emit('player-input', input);
