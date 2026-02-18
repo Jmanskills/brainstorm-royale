@@ -153,13 +153,22 @@ class Pixelio3D {
   
   // Update from server data
   updateFromServer(gameState) {
-    if (!gameState || !gameState.players) return;
+    console.log('🔄 UPDATE CALLED');
+    
+    if (!gameState || !gameState.players) {
+      console.warn('⚠️ NO GAMESTATE OR PLAYERS!');
+      return;
+    }
+    
+    console.log('✅ Got', gameState.players.length, 'players');
     
     const currentPlayers = new Set();
     
     // Update/create players
     gameState.players.forEach(player => {
       currentPlayers.add(player.id);
+      
+      console.log(`Player ${player.username}: x=${player.x} y=${player.y} vx=${player.velocityX} vy=${player.velocityY}`);
       
       if (!this.playerMeshes[player.id]) {
         // Create new player
@@ -175,13 +184,11 @@ class Pixelio3D {
       mesh.position.x = player.x - gameState.map.size / 2;
       mesh.position.z = player.y - gameState.map.size / 2;
       
-      // Log if MY player moved
-      if (player.id === this.myPlayerId && (oldX !== mesh.position.x || oldZ !== mesh.position.z)) {
-        console.log('🏃 MY PLAYER MOVED!', {
-          from: {x: oldX, z: oldZ},
-          to: {x: mesh.position.x, z: mesh.position.z},
-          serverPos: {x: player.x, y: player.y}
-        });
+      // Log ALL movements
+      if (oldX !== mesh.position.x || oldZ !== mesh.position.z) {
+        console.log(`🏃 ${player.username} MOVED!`);
+      } else {
+        console.log(`⏸️ ${player.username} not moving`);
       }
       
       // Update rotation based on velocity

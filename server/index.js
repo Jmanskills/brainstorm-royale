@@ -1229,6 +1229,10 @@ io.on('connection', (socket) => {
       dy = (dy / magnitude) * speed;
     }
     
+    // Store velocity for rotation
+    player.velocityX = dx;
+    player.velocityY = dy;
+    
     // Update position
     player.x += dx;
     player.y += dy;
