@@ -20,36 +20,44 @@ class Pixelio3D {
   }
   
   init() {
-    // Scene
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x87CEEB);
-    this.scene.fog = new THREE.Fog(0x87CEEB, 1000, 8000); // Further fog
+    console.log('🎨 Starting 3D initialization...');
     
-    // Camera
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-    this.camera.position.set(0, 100, 200); // Start higher to see more
-    
-    // CREATE OWN CANVAS - don't use existing one
-    const canvas = document.createElement('canvas');
-    canvas.id = 'pixelio-3d-canvas';
-    canvas.style.position = 'fixed';
-    canvas.style.top = '0';
-    canvas.style.left = '0';
-    canvas.style.width = '100vw';
-    canvas.style.height = '100vh';
-    canvas.style.zIndex = '999999'; // SUPER HIGH Z-INDEX
-    canvas.style.pointerEvents = 'auto'; // Make sure it receives clicks
-    document.body.appendChild(canvas);
-    
-    console.log('✅ Created own 3D canvas with z-index 999999');
-    console.log('Canvas element:', canvas);
-    
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.shadowMap.enabled = true;
-    
-    console.log('✅ Renderer created');
-    console.log('Renderer domElement:', this.renderer.domElement);
+    try {
+      // Scene
+      this.scene = new THREE.Scene();
+      this.scene.background = new THREE.Color(0x87CEEB);
+      this.scene.fog = new THREE.Fog(0x87CEEB, 1000, 8000);
+      console.log('✅ Scene created');
+      
+      // Camera
+      this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+      this.camera.position.set(0, 100, 200);
+      console.log('✅ Camera created');
+      
+      // CREATE OWN CANVAS
+      const canvas = document.createElement('canvas');
+      canvas.id = 'pixelio-3d-canvas';
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100vw';
+      canvas.style.height = '100vh';
+      canvas.style.zIndex = '999999';
+      canvas.style.pointerEvents = 'auto';
+      document.body.appendChild(canvas);
+      console.log('✅ Canvas created and appended to body');
+      
+      // Renderer
+      this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.shadowMap.enabled = true;
+      console.log('✅ Renderer created');
+      
+    } catch (error) {
+      console.error('❌ CRITICAL ERROR in 3D init:', error);
+      alert('3D initialization failed: ' + error.message);
+      throw error;
+    }
     
     // Lighting
     const ambient = new THREE.AmbientLight(0xffffff, 0.6);
