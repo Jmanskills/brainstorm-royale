@@ -307,9 +307,20 @@ class Pixelio3D {
       mouseY: 0
     };
     
-    // Debug: log when keys are pressed
+    // LOCAL MOVEMENT TEST - BYPASS SERVER!
     if (input.up || input.down || input.left || input.right) {
       console.log('📤 Sending input:', input);
+      
+      // Move player LOCALLY right now!
+      if (this.myPlayerId && this.playerMeshes[this.myPlayerId]) {
+        const mesh = this.playerMeshes[this.myPlayerId];
+        const speed = 2;
+        if (input.up) mesh.position.z -= speed;
+        if (input.down) mesh.position.z += speed;
+        if (input.left) mesh.position.x -= speed;
+        if (input.right) mesh.position.x += speed;
+        console.log('🎮 LOCAL MOVE! New position:', mesh.position.x, mesh.position.z);
+      }
     }
     
     socket.emit('player-input', input);
