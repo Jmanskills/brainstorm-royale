@@ -4832,45 +4832,11 @@
         return;
       }
       
-      // Skip CharacterRenderer - it doesn't exist anymore
-      // Just use simple skin selection
-      
-      const popularSkins = ['default', 'peely', 'pug', 'cyber_ninja', 'galaxy', 'lava', 'ice', 'golden'];
-      const ownedSkins = currentUser?.inventory?.ownedSkins || ['default'];
-      
-      skinGrid.innerHTML = '';
-      
-      popularSkins.forEach(skinId => {
-        const owned = ownedSkins.includes(skinId);
-        
-        const skinDiv = document.createElement('div');
-        skinDiv.className = `skin-option ${skinId === selectedSkin ? 'selected' : ''} ${!owned ? 'locked' : ''}`;
-        
-        // Simple colored box instead of rendered character
-        const colors = {
-          default: '#667eea',
-          peely: '#FFEB3B',
-          pug: '#D2B48C',
-          cyber_ninja: '#00FFFF',
-          galaxy: '#4B0082',
-          lava: '#FF4500',
-          ice: '#87CEEB',
-          golden: '#FFD700'
-        };
-        
-        skinDiv.innerHTML = `
-          <div style="width: 80px; height: 80px; background: ${colors[skinId] || '#667eea'}; border-radius: 8px; margin: 0 auto 8px;"></div>
-          <div class="skin-name">${skinId}</div>
-          ${!owned ? '<div class="skin-lock">🔒</div>' : ''}
-        `;
-        
-        if (owned) {
-          skinDiv.onclick = () => selectSkin(skinId);
-        }
-        
-        skinGrid.appendChild(skinDiv);
-      });
-    }
+      if (typeof CharacterRenderer === 'undefined') {
+        console.warn('CharacterRenderer not loaded yet, retrying in 500ms...');
+        setTimeout(loadSkinSelector, 500);
+        return;
+      }
       
       const popularSkins = ['default', 'peely', 'pug', 'cyber_ninja', 'galaxy', 'lava', 'ice', 'golden'];
       const ownedSkins = currentUser?.inventory?.ownedSkins || ['default'];
