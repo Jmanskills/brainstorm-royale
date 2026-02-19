@@ -1405,6 +1405,7 @@
         <button class="menu-button primary-button" onclick="quickPlay()">⚡ Quick Play</button>
         <button class="menu-button secondary-button" onclick="showJoinGameModal()">Join Private Game</button>
         <button class="menu-button secondary-button" onclick="createGame()">Create Private Game</button>
+        <button class="menu-button secondary-button" onclick="openMapStudio()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-top: 10px;">🗺️ Create Map</button>
         <button id="admin-button" class="menu-button admin-button" onclick="openAdminPanel()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); margin-top: 20px; display: none;">🛠️ Admin Panel</button>
       </div>
     </div>
@@ -1979,6 +1980,57 @@
         </div>
       </div>
     </div>
+  </div>
+  
+  <!-- MAP STUDIO -->
+  <div id="map-studio" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0f0f1e; z-index: 999998;">
+    <!-- Studio Header -->
+    <div style="position: fixed; top: 0; left: 0; right: 0; height: 60px; background: #1a1a2e; border-bottom: 2px solid #667eea; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 10;">
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">🗺️ Map Studio</h1>
+        <div style="color: #888; font-size: 14px;" id="studio-tool-indicator">Select Mode</div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button onclick="testStudioMap()" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">🎮 Test Map</button>
+        <button onclick="saveStudioMap()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">💾 Save Map</button>
+        <button onclick="closeMapStudio()" style="background: #ef4444; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer;">✕ Exit</button>
+      </div>
+    </div>
+    
+    <!-- Studio Sidebar -->
+    <div style="position: fixed; left: 0; top: 60px; bottom: 0; width: 250px; background: #1a1a2e; border-right: 2px solid #667eea; overflow-y: auto; z-index: 10;">
+      <div style="padding: 20px;">
+        <h3 style="color: white; margin: 0 0 15px 0;">Tools</h3>
+        <button class="studio-tool-btn" onclick="setStudioTool('select')" style="width: 100%; background: #667eea; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-weight: 600;">🖱️ Select</button>
+        <button class="studio-tool-btn" onclick="setStudioTool('move')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-weight: 600;">↔️ Move</button>
+        
+        <h3 style="color: white; margin: 30px 0 15px 0;">Add Objects</h3>
+        <button onclick="addStudioObject('cube')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">📦 Cube</button>
+        <button onclick="addStudioObject('sphere')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">⚪ Sphere</button>
+        <button onclick="addStudioObject('cylinder')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">🥫 Cylinder</button>
+        <button onclick="addStudioObject('house')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">🏠 House</button>
+        <button onclick="addStudioObject('tower')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">🗼 Tower</button>
+        <button onclick="addStudioObject('tree')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">🌳 Tree</button>
+        
+        <h3 style="color: white; margin: 30px 0 15px 0;">Game Objects</h3>
+        <button onclick="addStudioObject('spawn')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">🎯 Spawn Point</button>
+        <button onclick="addStudioObject('chest')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">📦 Chest</button>
+        <button onclick="addStudioObject('trivia')" style="width: 100%; background: #333; color: white; border: none; padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer;">❓ Trivia Station</button>
+      </div>
+    </div>
+    
+    <!-- Studio Properties Panel -->
+    <div style="position: fixed; right: 0; top: 60px; bottom: 0; width: 300px; background: #1a1a2e; border-left: 2px solid #667eea; overflow-y: auto; z-index: 10;">
+      <div style="padding: 20px;">
+        <h3 style="color: white; margin: 0 0 15px 0;">Properties</h3>
+        <div id="studio-properties" style="color: white;">
+          <p style="color: #888;">Select an object to edit its properties</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Studio Canvas -->
+    <canvas id="studio-canvas" style="position: fixed; left: 250px; top: 60px; right: 300px; bottom: 0;"></canvas>
   </div>
   
   <div id="game-screen">
@@ -5266,6 +5318,251 @@
         setTimeout(() => notification.remove(), 300);
       }, 5000);
     });
+    
+    // ========== MAP STUDIO ==========
+    let studioEngine = null;
+    let studioObjects = [];
+    
+    function openMapStudio() {
+      document.getElementById('map-studio').style.display = 'block';
+      document.getElementById('menu-screen').style.display = 'none';
+      
+      // Initialize studio engine
+      setTimeout(() => {
+        initStudioEngine();
+      }, 100);
+    }
+    
+    function closeMapStudio() {
+      if (confirm('Exit studio? Unsaved changes will be lost.')) {
+        document.getElementById('map-studio').style.display = 'none';
+        document.getElementById('menu-screen').style.display = 'flex';
+        
+        if (studioEngine) {
+          studioEngine.destroy();
+          studioEngine = null;
+        }
+      }
+    }
+    
+    function initStudioEngine() {
+      const canvas = document.getElementById('studio-canvas');
+      
+      // Simple THREE.js setup
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x87CEEB);
+      
+      const camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
+      camera.position.set(50, 50, 50);
+      camera.lookAt(0, 0, 0);
+      
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+      renderer.shadowMap.enabled = true;
+      
+      // Lighting
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+      sun.position.set(50, 100, 50);
+      sun.castShadow = true;
+      scene.add(sun);
+      
+      // Ground
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(200, 200),
+        new THREE.MeshLambertMaterial({ color: 0x7FFF00 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      scene.add(ground);
+      
+      // Grid
+      scene.add(new THREE.GridHelper(200, 40, 0x000000, 0x333333));
+      
+      // Camera controls (simple orbit)
+      let mouseDown = false;
+      let lastMouse = { x: 0, y: 0 };
+      let cameraAngle = { h: Math.PI / 4, v: Math.PI / 6 };
+      let cameraDistance = 100;
+      
+      canvas.addEventListener('mousedown', (e) => {
+        if (e.button === 2) { // Right click
+          mouseDown = true;
+          lastMouse = { x: e.clientX, y: e.clientY };
+        }
+      });
+      
+      canvas.addEventListener('mousemove', (e) => {
+        if (mouseDown) {
+          const dx = e.clientX - lastMouse.x;
+          const dy = e.clientY - lastMouse.y;
+          cameraAngle.h -= dx * 0.01;
+          cameraAngle.v -= dy * 0.01;
+          cameraAngle.v = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraAngle.v));
+          lastMouse = { x: e.clientX, y: e.clientY };
+        }
+      });
+      
+      canvas.addEventListener('mouseup', () => mouseDown = false);
+      canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+      
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        cameraDistance *= (1 + e.deltaY * 0.001);
+        cameraDistance = Math.max(10, Math.min(300, cameraDistance));
+      });
+      
+      function updateCamera() {
+        camera.position.x = cameraDistance * Math.cos(cameraAngle.v) * Math.sin(cameraAngle.h);
+        camera.position.y = cameraDistance * Math.sin(cameraAngle.v);
+        camera.position.z = cameraDistance * Math.cos(cameraAngle.v) * Math.cos(cameraAngle.h);
+        camera.lookAt(0, 0, 0);
+      }
+      
+      function animate() {
+        requestAnimationFrame(animate);
+        updateCamera();
+        renderer.render(scene, camera);
+      }
+      animate();
+      
+      // Store engine
+      studioEngine = {
+        scene,
+        camera,
+        renderer,
+        canvas,
+        destroy: () => {
+          renderer.dispose();
+        }
+      };
+      
+      // Resize
+      window.addEventListener('resize', () => {
+        camera.aspect = canvas.offsetWidth / canvas.offsetHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+      });
+    }
+    
+    function setStudioTool(tool) {
+      document.getElementById('studio-tool-indicator').textContent = 
+        tool === 'select' ? 'Select Mode' : 'Move Mode';
+      
+      // Update button styles
+      document.querySelectorAll('.studio-tool-btn').forEach(btn => {
+        btn.style.background = '#333';
+      });
+      event.target.style.background = '#667eea';
+    }
+    
+    function addStudioObject(type) {
+      if (!studioEngine) return;
+      
+      const colors = {
+        cube: 0x667eea,
+        sphere: 0x764ba2,
+        cylinder: 0xFF69B4,
+        house: 0x98FB98,
+        tower: 0x9370DB,
+        tree: 0x228B22,
+        spawn: 0xFF1493,
+        chest: 0xFFD700,
+        trivia: 0x00FFFF
+      };
+      
+      let geometry, mesh;
+      const color = colors[type] || 0x667eea;
+      
+      switch(type) {
+        case 'cube':
+          geometry = new THREE.BoxGeometry(10, 10, 10);
+          break;
+        case 'sphere':
+          geometry = new THREE.SphereGeometry(5, 32, 32);
+          break;
+        case 'cylinder':
+          geometry = new THREE.CylinderGeometry(5, 5, 10, 32);
+          break;
+        case 'house':
+          geometry = new THREE.BoxGeometry(15, 12, 15);
+          break;
+        case 'tower':
+          geometry = new THREE.BoxGeometry(10, 25, 10);
+          break;
+        case 'tree':
+          // Tree is special - trunk + leaves
+          const group = new THREE.Group();
+          const trunk = new THREE.Mesh(
+            new THREE.CylinderGeometry(1, 1, 8, 8),
+            new THREE.MeshLambertMaterial({ color: 0x8B4513 })
+          );
+          trunk.position.y = 4;
+          const leaves = new THREE.Mesh(
+            new THREE.SphereGeometry(4, 16, 16),
+            new THREE.MeshLambertMaterial({ color: 0x228B22 })
+          );
+          leaves.position.y = 12;
+          group.add(trunk);
+          group.add(leaves);
+          mesh = group;
+          studioEngine.scene.add(mesh);
+          mesh.position.set(Math.random() * 20 - 10, 0, Math.random() * 20 - 10);
+          return;
+        case 'spawn':
+          geometry = new THREE.SphereGeometry(3, 16, 16);
+          break;
+        case 'chest':
+          geometry = new THREE.BoxGeometry(8, 6, 8);
+          break;
+        case 'trivia':
+          geometry = new THREE.BoxGeometry(10, 15, 2);
+          break;
+        default:
+          geometry = new THREE.BoxGeometry(10, 10, 10);
+      }
+      
+      mesh = new THREE.Mesh(
+        geometry,
+        new THREE.MeshLambertMaterial({ color })
+      );
+      mesh.castShadow = true;
+      mesh.position.set(Math.random() * 20 - 10, 5, Math.random() * 20 - 10);
+      
+      studioEngine.scene.add(mesh);
+      studioObjects.push({ type, mesh });
+      
+      console.log('Added:', type);
+    }
+    
+    function saveStudioMap() {
+      const mapData = {
+        name: prompt('Enter map name:') || 'My Map',
+        objects: studioObjects.map(obj => ({
+          type: obj.type,
+          position: {
+            x: obj.mesh.position.x,
+            y: obj.mesh.position.y,
+            z: obj.mesh.position.z
+          }
+        }))
+      };
+      
+      // Download as JSON
+      const blob = new Blob([JSON.stringify(mapData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = mapData.name.replace(/\s+/g, '_') + '.json';
+      a.click();
+      
+      alert('✅ Map saved! Download should start.');
+    }
+    
+    function testStudioMap() {
+      alert('🎮 Test mode: This would launch your map in a test game! (Feature coming soon)');
+    }
+    
     
   </script>
 
