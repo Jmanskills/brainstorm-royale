@@ -1405,7 +1405,7 @@
         <button class="menu-button primary-button" onclick="quickPlay()">⚡ Quick Play</button>
         <button class="menu-button secondary-button" onclick="showJoinGameModal()">Join Private Game</button>
         <button class="menu-button secondary-button" onclick="createGame()">Create Private Game</button>
-        <button class="menu-button admin-button" onclick="openAdminPanel()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); margin-top: 20px;">🛠️ Admin Panel</button>
+        <button id="admin-button" class="menu-button admin-button" onclick="openAdminPanel()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); margin-top: 20px; display: none;">🛠️ Admin Panel</button>
       </div>
     </div>
 
@@ -2145,6 +2145,13 @@
         console.log('Connected to server');
         setupGameSockets();
         showMenuScreen();
+        
+        // Show admin button if user is admin
+        if (currentUser && currentUser.isAdmin) {
+          document.getElementById('admin-button').style.display = 'block';
+          console.log('👑 Admin access granted');
+        }
+        
         if (!isGuest) {
           loadFriends();
           loadFriendRequests();
@@ -5037,6 +5044,12 @@
     
     // ========== ADMIN PANEL ==========
     function openAdminPanel() {
+      // Double check admin status
+      if (!currentUser || !currentUser.isAdmin) {
+        alert('❌ Access Denied: Admin privileges required');
+        return;
+      }
+      
       document.getElementById('admin-panel').style.display = 'block';
       loadAdminData();
     }
