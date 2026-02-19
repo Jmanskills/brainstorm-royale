@@ -1405,6 +1405,7 @@
         <button class="menu-button primary-button" onclick="quickPlay()">⚡ Quick Play</button>
         <button class="menu-button secondary-button" onclick="showJoinGameModal()">Join Private Game</button>
         <button class="menu-button secondary-button" onclick="createGame()">Create Private Game</button>
+        <button class="menu-button admin-button" onclick="openAdminPanel()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); margin-top: 20px;">🛠️ Admin Panel</button>
       </div>
     </div>
 
@@ -1922,6 +1923,64 @@
 
   <!-- Simplified Lobby/Game screens for now - keeping your existing ones -->
   <div id="lobby-screen"></div>
+  
+  <!-- ADMIN PANEL -->
+  <div id="admin-panel" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 999999; overflow-y: auto;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 style="color: white; font-size: 36px; margin: 0;">🛠️ Admin Panel</h1>
+        <button onclick="closeAdminPanel()" style="background: #ff4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">✕ Close</button>
+      </div>
+      
+      <!-- Tabs -->
+      <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #333;">
+        <button class="admin-tab active" onclick="switchAdminTab('players')" data-tab="players" style="background: none; border: none; color: white; padding: 15px 25px; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600;">👥 Players</button>
+        <button class="admin-tab" onclick="switchAdminTab('games')" data-tab="games" style="background: none; border: none; color: white; padding: 15px 25px; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600;">🎮 Games</button>
+        <button class="admin-tab" onclick="switchAdminTab('broadcast')" data-tab="broadcast" style="background: none; border: none; color: white; padding: 15px 25px; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600;">📢 Broadcast</button>
+        <button class="admin-tab" onclick="switchAdminTab('coins')" data-tab="coins" style="background: none; border: none; color: white; padding: 15px 25px; font-size: 16px; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600;">💰 Give Coins</button>
+      </div>
+      
+      <!-- Players Tab -->
+      <div id="admin-tab-players" class="admin-tab-content">
+        <div style="background: #1a1a1a; border-radius: 12px; padding: 20px;">
+          <h2 style="color: white; margin-bottom: 20px;">Player Management</h2>
+          <div style="margin-bottom: 20px;">
+            <input type="text" id="admin-player-search" placeholder="Search player by username..." style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #333; background: #222; color: white; font-size: 14px;" oninput="searchAdminPlayers()">
+          </div>
+          <div id="admin-players-list" style="color: white;"></div>
+        </div>
+      </div>
+      
+      <!-- Games Tab -->
+      <div id="admin-tab-games" class="admin-tab-content" style="display: none;">
+        <div style="background: #1a1a1a; border-radius: 12px; padding: 20px;">
+          <h2 style="color: white; margin-bottom: 20px;">Active Games</h2>
+          <div id="admin-games-list" style="color: white;"></div>
+        </div>
+      </div>
+      
+      <!-- Broadcast Tab -->
+      <div id="admin-tab-broadcast" class="admin-tab-content" style="display: none;">
+        <div style="background: #1a1a1a; border-radius: 12px; padding: 20px;">
+          <h2 style="color: white; margin-bottom: 20px;">Send Global Message</h2>
+          <textarea id="admin-broadcast-message" placeholder="Type your message here..." style="width: 100%; height: 150px; padding: 12px; border-radius: 8px; border: 2px solid #333; background: #222; color: white; font-size: 14px; resize: vertical; font-family: inherit;" maxlength="500"></textarea>
+          <button onclick="sendAdminBroadcast()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%;">📢 Send to All Players</button>
+          <p style="color: #888; font-size: 12px; margin-top: 10px;">This will appear as a notification for all online players</p>
+        </div>
+      </div>
+      
+      <!-- Coins Tab -->
+      <div id="admin-tab-coins" class="admin-tab-content" style="display: none;">
+        <div style="background: #1a1a1a; border-radius: 12px; padding: 20px;">
+          <h2 style="color: white; margin-bottom: 20px;">Give Coins to Player</h2>
+          <input type="text" id="admin-coins-username" placeholder="Player username" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #333; background: #222; color: white; font-size: 14px; margin-bottom: 15px;">
+          <input type="number" id="admin-coins-amount" placeholder="Amount of coins" min="1" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #333; background: #222; color: white; font-size: 14px; margin-bottom: 15px;">
+          <button onclick="givePlayerCoins()" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%;">💰 Give Coins</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <div id="game-screen">
     <!-- 3D GAME CONTAINER -->
     <div id="game-3d-container"></div>
@@ -4975,6 +5034,226 @@
         });
       }
     });
+    
+    // ========== ADMIN PANEL ==========
+    function openAdminPanel() {
+      document.getElementById('admin-panel').style.display = 'block';
+      loadAdminData();
+    }
+    
+    function closeAdminPanel() {
+      document.getElementById('admin-panel').style.display = 'none';
+    }
+    
+    function switchAdminTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.borderBottomColor = 'transparent';
+      });
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      document.querySelector(`[data-tab="${tabName}"]`).style.borderBottomColor = '#667eea';
+      
+      // Update content
+      document.querySelectorAll('.admin-tab-content').forEach(content => {
+        content.style.display = 'none';
+      });
+      document.getElementById(`admin-tab-${tabName}`).style.display = 'block';
+      
+      // Load data for tab
+      if (tabName === 'players') loadAdminPlayers();
+      if (tabName === 'games') loadAdminGames();
+    }
+    
+    async function loadAdminData() {
+      await loadAdminPlayers();
+    }
+    
+    async function loadAdminPlayers() {
+      try {
+        const response = await fetch('/api/admin/users', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          displayAdminPlayers(data.users);
+        }
+      } catch (error) {
+        console.error('Error loading players:', error);
+      }
+    }
+    
+    function displayAdminPlayers(users) {
+      const list = document.getElementById('admin-players-list');
+      if (!users || users.length === 0) {
+        list.innerHTML = '<p style="color: #888;">No players found</p>';
+        return;
+      }
+      
+      list.innerHTML = users.map(user => `
+        <div style="background: #222; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">${user.username}</div>
+            <div style="font-size: 12px; color: #888;">
+              Coins: ${user.stats?.coins || 0} | 
+              Games: ${user.stats?.gamesPlayed || 0} | 
+              Wins: ${user.stats?.wins || 0} |
+              Banned: ${user.banned ? '✅ Yes' : '❌ No'}
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            ${user.banned 
+              ? `<button onclick="unbanPlayer('${user._id}')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Unban</button>`
+              : `<button onclick="banPlayer('${user._id}')" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">Ban</button>`
+            }
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function searchAdminPlayers() {
+      const searchTerm = document.getElementById('admin-player-search').value.toLowerCase();
+      const playerDivs = document.querySelectorAll('#admin-players-list > div');
+      
+      playerDivs.forEach(div => {
+        const username = div.querySelector('div > div').textContent.toLowerCase();
+        div.style.display = username.includes(searchTerm) ? 'flex' : 'none';
+      });
+    }
+    
+    async function banPlayer(userId) {
+      if (!confirm('Are you sure you want to ban this player?')) return;
+      
+      try {
+        const response = await fetch('/api/admin/ban-user', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          alert('Player banned successfully!');
+          loadAdminPlayers();
+        } else {
+          alert('Failed to ban player: ' + data.message);
+        }
+      } catch (error) {
+        alert('Error banning player: ' + error.message);
+      }
+    }
+    
+    async function unbanPlayer(userId) {
+      try {
+        const response = await fetch('/api/admin/unban-user', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          alert('Player unbanned successfully!');
+          loadAdminPlayers();
+        } else {
+          alert('Failed to unban player: ' + data.message);
+        }
+      } catch (error) {
+        alert('Error unbanning player: ' + error.message);
+      }
+    }
+    
+    async function loadAdminGames() {
+      // TODO: Implement active games list
+      document.getElementById('admin-games-list').innerHTML = '<p style="color: #888;">Active games feature coming soon...</p>';
+    }
+    
+    async function sendAdminBroadcast() {
+      const message = document.getElementById('admin-broadcast-message').value.trim();
+      if (!message) {
+        alert('Please enter a message!');
+        return;
+      }
+      
+      try {
+        socket.emit('admin-broadcast', { message });
+        alert('Message sent to all players!');
+        document.getElementById('admin-broadcast-message').value = '';
+      } catch (error) {
+        alert('Error sending message: ' + error.message);
+      }
+    }
+    
+    async function givePlayerCoins() {
+      const username = document.getElementById('admin-coins-username').value.trim();
+      const amount = parseInt(document.getElementById('admin-coins-amount').value);
+      
+      if (!username || !amount || amount < 1) {
+        alert('Please enter a valid username and amount!');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/admin/give-coins', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, amount })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          alert(`Successfully gave ${amount} coins to ${username}!`);
+          document.getElementById('admin-coins-username').value = '';
+          document.getElementById('admin-coins-amount').value = '';
+        } else {
+          alert('Failed to give coins: ' + data.message);
+        }
+      } catch (error) {
+        alert('Error giving coins: ' + error.message);
+      }
+    }
+    
+    // Listen for admin broadcasts
+    socket.on('admin-message', (data) => {
+      // Show notification
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 9999999;
+        max-width: 400px;
+        font-size: 16px;
+        font-weight: 600;
+        animation: slideIn 0.3s ease;
+      `;
+      notification.innerHTML = `
+        <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">📢 Admin Announcement</div>
+        <div>${data.message}</div>
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 5000);
+    });
+    
   </script>
 
 </body>
