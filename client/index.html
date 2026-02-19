@@ -1405,7 +1405,7 @@
         <button class="menu-button primary-button" onclick="quickPlay()">⚡ Quick Play</button>
         <button class="menu-button secondary-button" onclick="showJoinGameModal()">Join Private Game</button>
         <button class="menu-button secondary-button" onclick="createGame()">Create Private Game</button>
-        <button class="menu-button secondary-button" onclick="openCustomizer()" style="background: linear-gradient(135deg, #FF69B4 0%, #FF1493 100%); margin-top: 10px;">🎨 Customize Character</button>
+        <button class="menu-button secondary-button" onclick="openLocker()" style="background: linear-gradient(135deg, #FF69B4 0%, #FF1493 100%); margin-top: 10px;">🎒 Locker</button>
         <button class="menu-button secondary-button" onclick="openMapStudio()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-top: 10px;">🗺️ Create Map</button>
         <button id="admin-button" class="menu-button admin-button" onclick="openAdminPanel()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); margin-top: 20px; display: none;">🛠️ Admin Panel</button>
       </div>
@@ -2034,80 +2034,63 @@
     <canvas id="studio-canvas" style="position: fixed; left: 250px; top: 60px; right: 300px; bottom: 0;"></canvas>
   </div>
   
-  <!-- CHARACTER CUSTOMIZER -->
+  <!-- LOCKER (Like Fortnite) -->
   <div id="character-customizer" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 999997; overflow-y: auto;">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+    <div style="max-width: 1400px; margin: 0 auto; padding: 40px 20px;">
       <!-- Header -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-        <h1 style="color: white; font-size: 36px; margin: 0;">🎨 Customize Your Character</h1>
-        <button onclick="closeCustomizer()" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">✕ Close</button>
+        <h1 style="color: white; font-size: 36px; margin: 0;">🎒 Locker</h1>
+        <button onclick="window.closeLocker()" style="background: #ef4444; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold;">✕ Close</button>
       </div>
       
-      <div style="display: grid; grid-template-columns: 400px 1fr; gap: 30px;">
+      <div style="display: grid; grid-template-columns: 500px 1fr; gap: 30px;">
         <!-- Preview Panel -->
         <div style="background: rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2);">
           <h2 style="color: white; margin-bottom: 20px; text-align: center;">Preview</h2>
-          <canvas id="customizer-preview" width="300" height="400" style="border-radius: 12px; background: linear-gradient(180deg, #87CEEB 0%, #7FFF00 100%); display: block; margin: 0 auto;"></canvas>
+          <canvas id="customizer-preview" width="400" height="500" style="border-radius: 12px; background: linear-gradient(180deg, #87CEEB 0%, #7FFF00 100%); display: block; margin: 0 auto;"></canvas>
           
-          <div style="margin-top: 20px; text-align: center;">
-            <button onclick="window.randomizeCharacter()" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">🎲 Randomize</button>
-            <button onclick="window.saveCharacter()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%;">💾 Save Character</button>
+          <!-- Current Loadout -->
+          <div style="margin-top: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px;">
+            <h3 style="color: white; font-size: 14px; margin-bottom: 10px;">CURRENT LOADOUT</h3>
+            <div id="current-loadout" style="color: white; font-size: 13px;"></div>
           </div>
+          
+          <button onclick="window.saveLoadout()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px;">✅ Save & Equip</button>
         </div>
         
-        <!-- Customization Options -->
+        <!-- Locker Tabs -->
         <div style="background: rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2); overflow-y: auto; max-height: 80vh;">
           
-          <!-- Skin Colors -->
-          <div style="margin-bottom: 30px;">
-            <h3 style="color: white; margin-bottom: 15px;">Skin Color</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, 60px); gap: 10px;">
-              <button onclick="window.setCustomizerOption('skinColor', '#FF69B4')" style="width: 60px; height: 60px; background: #FF69B4; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="window.setCustomizerOption('skinColor', '#87CEEB')" style="width: 60px; height: 60px; background: #87CEEB; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="window.setCustomizerOption('skinColor', '#FFD700')" style="width: 60px; height: 60px; background: #FFD700; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="window.setCustomizerOption('skinColor', '#98FB98')" style="width: 60px; height: 60px; background: #98FB98; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="window.setCustomizerOption('skinColor', '#9370DB')" style="width: 60px; height: 60px; background: #9370DB; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="window.setCustomizerOption('skinColor', '#FF6347')" style="width: 60px; height: 60px; background: #FF6347; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="window.setCustomizerOption('skinColor', '#667eea')" style="width: 60px; height: 60px; background: #667eea; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="window.setCustomizerOption('skinColor', '#764ba2')" style="width: 60px; height: 60px; background: #764ba2; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-            </div>
+          <!-- Tabs -->
+          <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 10px;">
+            <button onclick="window.switchLockerTab('skins')" class="locker-tab active" data-tab="skins" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">🧑 Skins</button>
+            <button onclick="window.switchLockerTab('backbling')" class="locker-tab" data-tab="backbling" style="background: none; color: rgba(255,255,255,0.6); border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">🎒 Back Bling</button>
+            <button onclick="window.switchLockerTab('hats')" class="locker-tab" data-tab="hats" style="background: none; color: rgba(255,255,255,0.6); border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">🎩 Hats</button>
+            <button onclick="window.switchLockerTab('pets')" class="locker-tab" data-tab="pets" style="background: none; color: rgba(255,255,255,0.6); border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">🐕 Pets</button>
           </div>
           
-          <!-- Face Types -->
-          <div style="margin-bottom: 30px;">
-            <h3 style="color: white; margin-bottom: 15px;">Face Expression</h3>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-              <button onclick="window.setCustomizerOption('face', 'happy')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😊</button>
-              <button onclick="window.setCustomizerOption('face', 'cool')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😎</button>
-              <button onclick="window.setCustomizerOption('face', 'excited')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤩</button>
-              <button onclick="window.setCustomizerOption('face', 'robot')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤖</button>
-              <button onclick="window.setCustomizerOption('face', 'angry')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😠</button>
-              <button onclick="window.setCustomizerOption('face', 'silly')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤪</button>
-              <button onclick="window.setCustomizerOption('face', 'sleepy')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😴</button>
-              <button onclick="window.setCustomizerOption('face', 'star')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">⭐</button>
-            </div>
+          <!-- Skins Tab -->
+          <div id="locker-tab-skins" class="locker-tab-content">
+            <h3 style="color: white; margin-bottom: 15px;">Select Your Skin</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;" id="skins-grid"></div>
           </div>
           
-          <!-- Hats (Free Customization) -->
-          <div style="margin-bottom: 30px;">
-            <h3 style="color: white; margin-bottom: 15px;">Hats (Free)</h3>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-              <button onclick="window.setCustomizerOption('hat', 'none')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: 600;">None</button>
-              <button onclick="window.setCustomizerOption('hat', 'tophat')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🎩</button>
-              <button onclick="window.setCustomizerOption('hat', 'crown')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">👑</button>
-              <button onclick="window.setCustomizerOption('hat', 'cap')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🧢</button>
-              <button onclick="window.setCustomizerOption('hat', 'wizard')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🧙</button>
-              <button onclick="window.setCustomizerOption('hat', 'cowboy')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤠</button>
-              <button onclick="window.setCustomizerOption('hat', 'party')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🎉</button>
-              <button onclick="window.setCustomizerOption('hat', 'halo')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😇</button>
-            </div>
+          <!-- Back Bling Tab -->
+          <div id="locker-tab-backbling" class="locker-tab-content" style="display: none;">
+            <h3 style="color: white; margin-bottom: 15px;">Back Bling</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;" id="backbling-grid"></div>
           </div>
           
-          <!-- Premium Accessories (Shop Link) -->
-          <div style="background: rgba(255,215,0,0.1); border: 2px solid #FFD700; border-radius: 12px; padding: 20px;">
-            <h3 style="color: #FFD700; margin-bottom: 10px;">💎 Premium Accessories</h3>
-            <p style="color: white; margin-bottom: 15px; font-size: 14px;">Want more? Get exclusive accessories from the shop!</p>
-            <button onclick="closeCustomizer(); /* TODO: Open shop */" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">🛒 Visit Shop</button>
+          <!-- Hats Tab -->
+          <div id="locker-tab-hats" class="locker-tab-content" style="display: none;">
+            <h3 style="color: white; margin-bottom: 15px;">Hats</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;" id="hats-grid"></div>
+          </div>
+          
+          <!-- Pets Tab -->
+          <div id="locker-tab-pets" class="locker-tab-content" style="display: none;">
+            <h3 style="color: white; margin-bottom: 15px;">Pets</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;" id="pets-grid"></div>
           </div>
           
         </div>
@@ -5645,147 +5628,314 @@
       alert('🎮 Test mode: This would launch your map in a test game! (Feature coming soon)');
     }
     
-    // ========== CHARACTER CUSTOMIZER ==========
-    window.customizerCharacter = {
-      skinColor: '#667eea',
-      face: 'happy',
-      hat: 'none'
+    // ========== LOCKER SYSTEM (Like Fortnite) ==========
+    window.playerLoadout = {
+      skin: 'default',      // Current equipped skin
+      backBling: 'none',    // Back bling
+      hat: 'none',          // Hat accessory
+      pet: 'none'           // Pet
     };
     
-    window.customizerAccessories = {
-      glasses: { owned: false, price: 100 },
-      crown: { owned: false, price: 500 },
-      wings: { owned: false, price: 1000 },
-      cape: { owned: false, price: 750 }
+    // Available skins (user can own multiple)
+    window.availableSkins = {
+      default: { name: 'Default', color: '#667eea', owned: true, rarity: 'common' },
+      pink: { name: 'Pink Bot', color: '#FF69B4', owned: false, rarity: 'uncommon', price: 500 },
+      gold: { name: 'Golden', color: '#FFD700', owned: false, rarity: 'rare', price: 1000 },
+      shadow: { name: 'Shadow', color: '#2d2d2d', owned: false, rarity: 'epic', price: 2000 },
+      galaxy: { name: 'Galaxy', color: '#9370DB', owned: false, rarity: 'legendary', price: 5000 },
+      cyber: { name: 'Cyber', color: '#00FFFF', owned: false, rarity: 'epic', price: 2500 },
+      flame: { name: 'Flame', color: '#FF4500', owned: false, rarity: 'rare', price: 1500 },
+      ocean: { name: 'Ocean', color: '#1E90FF', owned: false, rarity: 'rare', price: 1200 }
     };
     
-    window.openCustomizer = function() {
-      console.log('Opening customizer...');
+    // Accessories
+    window.availableBackBling = {
+      none: { name: 'None', emoji: '', owned: true },
+      wings: { name: 'Wings', emoji: '🦋', owned: false, price: 800 },
+      cape: { name: 'Cape', emoji: '🦸', owned: false, price: 600 },
+      jetpack: { name: 'Jetpack', emoji: '🚀', owned: false, price: 1000 }
+    };
+    
+    window.availableHats = {
+      none: { name: 'None', emoji: '', owned: true },
+      crown: { name: 'Crown', emoji: '👑', owned: false, price: 500 },
+      tophat: { name: 'Top Hat', emoji: '🎩', owned: false, price: 300 },
+      wizard: { name: 'Wizard Hat', emoji: '🧙', owned: false, price: 700 },
+      halo: { name: 'Halo', emoji: '😇', owned: false, price: 900 }
+    };
+    
+    window.availablePets = {
+      none: { name: 'None', emoji: '', owned: true },
+      dog: { name: 'Dog', emoji: '🐕', owned: false, price: 1000 },
+      cat: { name: 'Cat', emoji: '🐈', owned: false, price: 1000 },
+      dragon: { name: 'Dragon', emoji: '🐉', owned: false, price: 2000 }
+    };
+    
+    window.openLocker = function() {
+      console.log('Opening locker...');
       document.getElementById('character-customizer').style.display = 'block';
       document.getElementById('menu-screen').style.display = 'none';
       
-      // Load saved character
-      const saved = localStorage.getItem('pixelioCharacter');
+      // Load saved loadout
+      const saved = localStorage.getItem('pixelioLoadout');
       if (saved) {
         try {
-          window.customizerCharacter = JSON.parse(saved);
-          console.log('Loaded character:', window.customizerCharacter);
-        } catch(e) {
-          console.error('Failed to load character:', e);
-        }
-      }
-      
-      // Load owned accessories
-      const savedAccessories = localStorage.getItem('pixelioAccessories');
-      if (savedAccessories) {
-        try {
-          window.customizerAccessories = JSON.parse(savedAccessories);
+          window.playerLoadout = JSON.parse(saved);
         } catch(e) {}
       }
       
-      // Draw preview
-      setTimeout(() => window.drawCustomizerPreview(), 100);
+      // Load owned items
+      const savedOwned = localStorage.getItem('pixelioOwnedItems');
+      if (savedOwned) {
+        try {
+          const owned = JSON.parse(savedOwned);
+          // Apply owned status
+          if (owned.skins) Object.keys(owned.skins).forEach(k => {
+            if (window.availableSkins[k]) window.availableSkins[k].owned = owned.skins[k];
+          });
+          if (owned.backBling) Object.keys(owned.backBling).forEach(k => {
+            if (window.availableBackBling[k]) window.availableBackBling[k].owned = owned.backBling[k];
+          });
+          if (owned.hats) Object.keys(owned.hats).forEach(k => {
+            if (window.availableHats[k]) window.availableHats[k].owned = owned.hats[k];
+          });
+          if (owned.pets) Object.keys(owned.pets).forEach(k => {
+            if (window.availablePets[k]) window.availablePets[k].owned = owned.pets[k];
+          });
+        } catch(e) {}
+      }
+      
+      window.renderLockerItems();
+      setTimeout(() => window.drawLockerPreview(), 100);
     };
     
-    window.closeCustomizer = function() {
+    window.closeLocker = function() {
       document.getElementById('character-customizer').style.display = 'none';
       document.getElementById('menu-screen').style.display = 'flex';
     };
     
-    window.setCustomizerOption = function(type, value) {
-      console.log('Setting:', type, value);
-      window.customizerCharacter[type] = value;
-      window.drawCustomizerPreview();
-    };
-    
-    window.randomizeCharacter = function() {
-      const colors = ['#FF69B4', '#87CEEB', '#FFD700', '#98FB98', '#9370DB', '#FF6347', '#667eea', '#764ba2'];
-      const faces = ['happy', 'cool', 'excited', 'robot', 'angry', 'silly', 'sleepy', 'star'];
-      const hats = ['none', 'tophat', 'crown', 'cap', 'wizard', 'cowboy', 'party', 'halo'];
+    window.switchLockerTab = function(tab) {
+      // Update tabs
+      document.querySelectorAll('.locker-tab').forEach(t => {
+        t.style.background = 'none';
+        t.style.color = 'rgba(255,255,255,0.6)';
+      });
+      document.querySelector(`[data-tab="${tab}"]`).style.background = 'rgba(255,255,255,0.2)';
+      document.querySelector(`[data-tab="${tab}"]`).style.color = 'white';
       
-      window.customizerCharacter = {
-        skinColor: colors[Math.floor(Math.random() * colors.length)],
-        face: faces[Math.floor(Math.random() * faces.length)],
-        hat: hats[Math.floor(Math.random() * hats.length)]
-      };
+      // Update content
+      document.querySelectorAll('.locker-tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById(`locker-tab-${tab}`).style.display = 'block';
+    };
+    
+    window.renderLockerItems = function() {
+      // Render skins
+      const skinsGrid = document.getElementById('skins-grid');
+      skinsGrid.innerHTML = Object.keys(window.availableSkins).map(skinId => {
+        const skin = window.availableSkins[skinId];
+        const isEquipped = window.playerLoadout.skin === skinId;
+        return `
+          <div onclick="window.selectSkin('${skinId}')" style="
+            background: ${skin.owned ? `linear-gradient(135deg, ${skin.color}, ${skin.color}aa)` : 'rgba(0,0,0,0.5)'};
+            border-radius: 12px;
+            padding: 15px;
+            cursor: ${skin.owned ? 'pointer' : 'not-allowed'};
+            border: ${isEquipped ? '3px solid #FFD700' : '2px solid rgba(255,255,255,0.2)'};
+            text-align: center;
+            position: relative;
+          ">
+            <div style="font-size: 48px; margin-bottom: 10px;">🧑</div>
+            <div style="color: white; font-weight: 600; font-size: 14px;">${skin.name}</div>
+            ${!skin.owned ? `<div style="color: #FFD700; font-size: 12px; margin-top: 5px;">🔒 ${skin.price} coins</div>` : ''}
+            ${isEquipped ? '<div style="color: #FFD700; font-size: 12px; margin-top: 5px;">✅ EQUIPPED</div>' : ''}
+          </div>
+        `;
+      }).join('');
       
-      window.drawCustomizerPreview();
+      // Render back bling
+      const backblingGrid = document.getElementById('backbling-grid');
+      backblingGrid.innerHTML = Object.keys(window.availableBackBling).map(id => {
+        const item = window.availableBackBling[id];
+        const isEquipped = window.playerLoadout.backBling === id;
+        return `
+          <div onclick="window.selectBackBling('${id}')" style="
+            background: ${item.owned ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.5)'};
+            border-radius: 12px;
+            padding: 15px;
+            cursor: ${item.owned ? 'pointer' : 'not-allowed'};
+            border: ${isEquipped ? '3px solid #FFD700' : '2px solid rgba(255,255,255,0.2)'};
+            text-align: center;
+          ">
+            <div style="font-size: 48px; margin-bottom: 10px;">${item.emoji || '❌'}</div>
+            <div style="color: white; font-weight: 600; font-size: 14px;">${item.name}</div>
+            ${!item.owned && item.price ? `<div style="color: #FFD700; font-size: 12px; margin-top: 5px;">🔒 ${item.price} coins</div>` : ''}
+            ${isEquipped ? '<div style="color: #FFD700; font-size: 12px; margin-top: 5px;">✅ EQUIPPED</div>' : ''}
+          </div>
+        `;
+      }).join('');
+      
+      // Render hats
+      const hatsGrid = document.getElementById('hats-grid');
+      hatsGrid.innerHTML = Object.keys(window.availableHats).map(id => {
+        const item = window.availableHats[id];
+        const isEquipped = window.playerLoadout.hat === id;
+        return `
+          <div onclick="window.selectHat('${id}')" style="
+            background: ${item.owned ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.5)'};
+            border-radius: 12px;
+            padding: 15px;
+            cursor: ${item.owned ? 'pointer' : 'not-allowed'};
+            border: ${isEquipped ? '3px solid #FFD700' : '2px solid rgba(255,255,255,0.2)'};
+            text-align: center;
+          ">
+            <div style="font-size: 48px; margin-bottom: 10px;">${item.emoji || '❌'}</div>
+            <div style="color: white; font-weight: 600; font-size: 14px;">${item.name}</div>
+            ${!item.owned && item.price ? `<div style="color: #FFD700; font-size: 12px; margin-top: 5px;">🔒 ${item.price} coins</div>` : ''}
+            ${isEquipped ? '<div style="color: #FFD700; font-size: 12px; margin-top: 5px;">✅ EQUIPPED</div>' : ''}
+          </div>
+        `;
+      }).join('');
+      
+      // Render pets
+      const petsGrid = document.getElementById('pets-grid');
+      petsGrid.innerHTML = Object.keys(window.availablePets).map(id => {
+        const item = window.availablePets[id];
+        const isEquipped = window.playerLoadout.pet === id;
+        return `
+          <div onclick="window.selectPet('${id}')" style="
+            background: ${item.owned ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.5)'};
+            border-radius: 12px;
+            padding: 15px;
+            cursor: ${item.owned ? 'pointer' : 'not-allowed'};
+            border: ${isEquipped ? '3px solid #FFD700' : '2px solid rgba(255,255,255,0.2)'};
+            text-align: center;
+          ">
+            <div style="font-size: 48px; margin-bottom: 10px;">${item.emoji || '❌'}</div>
+            <div style="color: white; font-weight: 600; font-size: 14px;">${item.name}</div>
+            ${!item.owned && item.price ? `<div style="color: #FFD700; font-size: 12px; margin-top: 5px;">🔒 ${item.price} coins</div>` : ''}
+            ${isEquipped ? '<div style="color: #FFD700; font-size: 12px; margin-top: 5px;">✅ EQUIPPED</div>' : ''}
+          </div>
+        `;
+      }).join('');
+      
+      window.updateCurrentLoadout();
     };
     
-    window.saveCharacter = function() {
-      localStorage.setItem('pixelioCharacter', JSON.stringify(window.customizerCharacter));
-      alert('✅ Character saved! Your custom look will appear in-game!');
-      console.log('Saved character:', window.customizerCharacter);
-    };
-    
-    window.drawCustomizerPreview = function() {
-      const canvas = document.getElementById('customizer-preview');
-      if (!canvas) {
-        console.error('Canvas not found!');
+    window.selectSkin = function(skinId) {
+      if (!window.availableSkins[skinId].owned) {
+        alert('This skin is locked! Purchase it from the shop.');
         return;
       }
+      window.playerLoadout.skin = skinId;
+      window.renderLockerItems();
+      window.drawLockerPreview();
+    };
+    
+    window.selectBackBling = function(id) {
+      if (!window.availableBackBling[id].owned) {
+        alert('This item is locked! Purchase it from the shop.');
+        return;
+      }
+      window.playerLoadout.backBling = id;
+      window.renderLockerItems();
+      window.drawLockerPreview();
+    };
+    
+    window.selectHat = function(id) {
+      if (!window.availableHats[id].owned) {
+        alert('This item is locked! Purchase it from the shop.');
+        return;
+      }
+      window.playerLoadout.hat = id;
+      window.renderLockerItems();
+      window.drawLockerPreview();
+    };
+    
+    window.selectPet = function(id) {
+      if (!window.availablePets[id].owned) {
+        alert('This pet is locked! Purchase it from the shop.');
+        return;
+      }
+      window.playerLoadout.pet = id;
+      window.renderLockerItems();
+      window.drawLockerPreview();
+    };
+    
+    window.updateCurrentLoadout = function() {
+      const div = document.getElementById('current-loadout');
+      div.innerHTML = `
+        Skin: ${window.availableSkins[window.playerLoadout.skin].name}<br>
+        Back Bling: ${window.availableBackBling[window.playerLoadout.backBling].name}<br>
+        Hat: ${window.availableHats[window.playerLoadout.hat].name}<br>
+        Pet: ${window.availablePets[window.playerLoadout.pet].name}
+      `;
+    };
+    
+    window.saveLoadout = function() {
+      localStorage.setItem('pixelioLoadout', JSON.stringify(window.playerLoadout));
+      alert('✅ Loadout saved! Your skin and accessories will appear in-game!');
+    };
+    
+    window.drawLockerPreview = function() {
+      const canvas = document.getElementById('customizer-preview');
+      if (!canvas) return;
       
       const ctx = canvas.getContext('2d');
       
-      // Clear with gradient background
+      // Background
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
       gradient.addColorStop(0, '#87CEEB');
       gradient.addColorStop(1, '#7FFF00');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
+      // Get current skin
+      const skin = window.availableSkins[window.playerLoadout.skin];
+      
       // Draw body
-      ctx.fillStyle = window.customizerCharacter.skinColor;
-      ctx.fillRect(100, 180, 100, 150);
+      ctx.fillStyle = skin.color;
+      ctx.fillRect(150, 220, 100, 150);
       
       // Draw head
-      ctx.fillStyle = window.customizerCharacter.skinColor;
-      ctx.fillRect(110, 100, 80, 80);
+      ctx.fillRect(160, 140, 80, 80);
       
       // Draw face
       ctx.font = '50px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      
-      const faceEmojis = {
-        happy: '😊',
-        cool: '😎',
-        excited: '🤩',
-        robot: '🤖',
-        angry: '😠',
-        silly: '🤪',
-        sleepy: '😴',
-        star: '⭐'
-      };
-      
-      ctx.fillText(faceEmojis[window.customizerCharacter.face] || '😊', 150, 140);
+      ctx.fillText('😊', 200, 180);
       
       // Draw hat
-      if (window.customizerCharacter.hat && window.customizerCharacter.hat !== 'none') {
+      const hat = window.availableHats[window.playerLoadout.hat];
+      if (hat.emoji) {
         ctx.font = '50px Arial';
-        const hatEmojis = {
-          tophat: '🎩',
-          crown: '👑',
-          cap: '🧢',
-          wizard: '🧙',
-          cowboy: '🤠',
-          party: '🎉',
-          halo: '😇'
-        };
-        ctx.fillText(hatEmojis[window.customizerCharacter.hat] || '', 150, 70);
+        ctx.fillText(hat.emoji, 200, 120);
+      }
+      
+      // Draw back bling
+      const backBling = window.availableBackBling[window.playerLoadout.backBling];
+      if (backBling.emoji) {
+        ctx.font = '40px Arial';
+        ctx.fillText(backBling.emoji, 250, 260);
+      }
+      
+      // Draw pet
+      const pet = window.availablePets[window.playerLoadout.pet];
+      if (pet.emoji) {
+        ctx.font = '30px Arial';
+        ctx.fillText(pet.emoji, 120, 380);
       }
       
       // Draw arms
-      ctx.fillStyle = window.customizerCharacter.skinColor;
-      ctx.fillRect(70, 200, 30, 80);
-      ctx.fillRect(200, 200, 30, 80);
+      ctx.fillStyle = skin.color;
+      ctx.fillRect(120, 240, 30, 80);
+      ctx.fillRect(250, 240, 30, 80);
       
       // Draw legs
-      ctx.fillRect(110, 330, 35, 70);
-      ctx.fillRect(155, 330, 35, 70);
-      
-      console.log('Drew preview for:', window.customizerCharacter);
+      ctx.fillRect(160, 370, 35, 70);
+      ctx.fillRect(205, 370, 35, 70);
     };
+    
     
     
     
