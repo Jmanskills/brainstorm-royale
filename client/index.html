@@ -2050,8 +2050,8 @@
           <canvas id="customizer-preview" width="300" height="400" style="border-radius: 12px; background: linear-gradient(180deg, #87CEEB 0%, #7FFF00 100%); display: block; margin: 0 auto;"></canvas>
           
           <div style="margin-top: 20px; text-align: center;">
-            <button onclick="randomizeCharacter()" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">🎲 Randomize</button>
-            <button onclick="saveCharacter()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%;">💾 Save Character</button>
+            <button onclick="window.randomizeCharacter()" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;">🎲 Randomize</button>
+            <button onclick="window.saveCharacter()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%;">💾 Save Character</button>
           </div>
         </div>
         
@@ -2062,56 +2062,52 @@
           <div style="margin-bottom: 30px;">
             <h3 style="color: white; margin-bottom: 15px;">Skin Color</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, 60px); gap: 10px;">
-              <button onclick="setCustomizerOption('skinColor', '#FF69B4')" style="width: 60px; height: 60px; background: #FF69B4; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="setCustomizerOption('skinColor', '#87CEEB')" style="width: 60px; height: 60px; background: #87CEEB; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="setCustomizerOption('skinColor', '#FFD700')" style="width: 60px; height: 60px; background: #FFD700; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="setCustomizerOption('skinColor', '#98FB98')" style="width: 60px; height: 60px; background: #98FB98; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="setCustomizerOption('skinColor', '#9370DB')" style="width: 60px; height: 60px; background: #9370DB; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="setCustomizerOption('skinColor', '#FF6347')" style="width: 60px; height: 60px; background: #FF6347; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="setCustomizerOption('skinColor', '#667eea')" style="width: 60px; height: 60px; background: #667eea; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
-              <button onclick="setCustomizerOption('skinColor', '#764ba2')" style="width: 60px; height: 60px; background: #764ba2; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
+              <button onclick="window.setCustomizerOption('skinColor', '#FF69B4')" style="width: 60px; height: 60px; background: #FF69B4; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
+              <button onclick="window.setCustomizerOption('skinColor', '#87CEEB')" style="width: 60px; height: 60px; background: #87CEEB; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
+              <button onclick="window.setCustomizerOption('skinColor', '#FFD700')" style="width: 60px; height: 60px; background: #FFD700; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
+              <button onclick="window.setCustomizerOption('skinColor', '#98FB98')" style="width: 60px; height: 60px; background: #98FB98; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
+              <button onclick="window.setCustomizerOption('skinColor', '#9370DB')" style="width: 60px; height: 60px; background: #9370DB; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
+              <button onclick="window.setCustomizerOption('skinColor', '#FF6347')" style="width: 60px; height: 60px; background: #FF6347; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
+              <button onclick="window.setCustomizerOption('skinColor', '#667eea')" style="width: 60px; height: 60px; background: #667eea; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
+              <button onclick="window.setCustomizerOption('skinColor', '#764ba2')" style="width: 60px; height: 60px; background: #764ba2; border: 3px solid white; border-radius: 10px; cursor: pointer;"></button>
             </div>
           </div>
           
           <!-- Face Types -->
           <div style="margin-bottom: 30px;">
-            <h3 style="color: white; margin-bottom: 15px;">Face</h3>
+            <h3 style="color: white; margin-bottom: 15px;">Face Expression</h3>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-              <button onclick="setCustomizerOption('face', 'happy')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😊</button>
-              <button onclick="setCustomizerOption('face', 'cool')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😎</button>
-              <button onclick="setCustomizerOption('face', 'excited')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤩</button>
-              <button onclick="setCustomizerOption('face', 'robot')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤖</button>
-              <button onclick="setCustomizerOption('face', 'angry')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😠</button>
-              <button onclick="setCustomizerOption('face', 'silly')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤪</button>
-              <button onclick="setCustomizerOption('face', 'sleepy')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😴</button>
-              <button onclick="setCustomizerOption('face', 'star')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤩</button>
+              <button onclick="window.setCustomizerOption('face', 'happy')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😊</button>
+              <button onclick="window.setCustomizerOption('face', 'cool')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😎</button>
+              <button onclick="window.setCustomizerOption('face', 'excited')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤩</button>
+              <button onclick="window.setCustomizerOption('face', 'robot')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤖</button>
+              <button onclick="window.setCustomizerOption('face', 'angry')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😠</button>
+              <button onclick="window.setCustomizerOption('face', 'silly')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤪</button>
+              <button onclick="window.setCustomizerOption('face', 'sleepy')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😴</button>
+              <button onclick="window.setCustomizerOption('face', 'star')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">⭐</button>
             </div>
           </div>
           
-          <!-- Accessories -->
+          <!-- Hats (Free Customization) -->
           <div style="margin-bottom: 30px;">
-            <h3 style="color: white; margin-bottom: 15px;">Accessories</h3>
+            <h3 style="color: white; margin-bottom: 15px;">Hats (Free)</h3>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-              <button onclick="setCustomizerOption('accessory', 'none')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: 600;">None</button>
-              <button onclick="setCustomizerOption('accessory', 'glasses')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🕶️</button>
-              <button onclick="setCustomizerOption('accessory', 'hat')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🎩</button>
-              <button onclick="setCustomizerOption('accessory', 'crown')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">👑</button>
+              <button onclick="window.setCustomizerOption('hat', 'none')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: 600;">None</button>
+              <button onclick="window.setCustomizerOption('hat', 'tophat')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🎩</button>
+              <button onclick="window.setCustomizerOption('hat', 'crown')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">👑</button>
+              <button onclick="window.setCustomizerOption('hat', 'cap')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🧢</button>
+              <button onclick="window.setCustomizerOption('hat', 'wizard')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🧙</button>
+              <button onclick="window.setCustomizerOption('hat', 'cowboy')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤠</button>
+              <button onclick="window.setCustomizerOption('hat', 'party')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🎉</button>
+              <button onclick="window.setCustomizerOption('hat', 'halo')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😇</button>
             </div>
           </div>
           
-          <!-- Hats -->
-          <div style="margin-bottom: 30px;">
-            <h3 style="color: white; margin-bottom: 15px;">Hats</h3>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-              <button onclick="setCustomizerOption('hat', 'none')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: 600;">None</button>
-              <button onclick="setCustomizerOption('hat', 'tophat')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🎩</button>
-              <button onclick="setCustomizerOption('hat', 'crown')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">👑</button>
-              <button onclick="setCustomizerOption('hat', 'cap')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🧢</button>
-              <button onclick="setCustomizerOption('hat', 'wizard')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🧙</button>
-              <button onclick="setCustomizerOption('hat', 'cowboy')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🤠</button>
-              <button onclick="setCustomizerOption('hat', 'party')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">🎉</button>
-              <button onclick="setCustomizerOption('hat', 'halo')" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 24px;">😇</button>
-            </div>
+          <!-- Premium Accessories (Shop Link) -->
+          <div style="background: rgba(255,215,0,0.1); border: 2px solid #FFD700; border-radius: 12px; padding: 20px;">
+            <h3 style="color: #FFD700; margin-bottom: 10px;">💎 Premium Accessories</h3>
+            <p style="color: white; margin-bottom: 15px; font-size: 14px;">Want more? Get exclusive accessories from the shop!</p>
+            <button onclick="closeCustomizer(); /* TODO: Open shop */" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">🛒 Visit Shop</button>
           </div>
           
         </div>
@@ -5650,79 +5646,106 @@
     }
     
     // ========== CHARACTER CUSTOMIZER ==========
-    let customizerCharacter = {
+    window.customizerCharacter = {
       skinColor: '#667eea',
       face: 'happy',
-      accessory: 'none',
       hat: 'none'
     };
     
-    function openCustomizer() {
+    window.customizerAccessories = {
+      glasses: { owned: false, price: 100 },
+      crown: { owned: false, price: 500 },
+      wings: { owned: false, price: 1000 },
+      cape: { owned: false, price: 750 }
+    };
+    
+    window.openCustomizer = function() {
+      console.log('Opening customizer...');
       document.getElementById('character-customizer').style.display = 'block';
       document.getElementById('menu-screen').style.display = 'none';
       
       // Load saved character
       const saved = localStorage.getItem('pixelioCharacter');
       if (saved) {
-        customizerCharacter = JSON.parse(saved);
+        try {
+          window.customizerCharacter = JSON.parse(saved);
+          console.log('Loaded character:', window.customizerCharacter);
+        } catch(e) {
+          console.error('Failed to load character:', e);
+        }
+      }
+      
+      // Load owned accessories
+      const savedAccessories = localStorage.getItem('pixelioAccessories');
+      if (savedAccessories) {
+        try {
+          window.customizerAccessories = JSON.parse(savedAccessories);
+        } catch(e) {}
       }
       
       // Draw preview
-      drawCustomizerPreview();
-    }
+      setTimeout(() => window.drawCustomizerPreview(), 100);
+    };
     
-    function closeCustomizer() {
+    window.closeCustomizer = function() {
       document.getElementById('character-customizer').style.display = 'none';
       document.getElementById('menu-screen').style.display = 'flex';
-    }
+    };
     
-    function setCustomizerOption(type, value) {
-      customizerCharacter[type] = value;
-      drawCustomizerPreview();
-    }
+    window.setCustomizerOption = function(type, value) {
+      console.log('Setting:', type, value);
+      window.customizerCharacter[type] = value;
+      window.drawCustomizerPreview();
+    };
     
-    function randomizeCharacter() {
+    window.randomizeCharacter = function() {
       const colors = ['#FF69B4', '#87CEEB', '#FFD700', '#98FB98', '#9370DB', '#FF6347', '#667eea', '#764ba2'];
       const faces = ['happy', 'cool', 'excited', 'robot', 'angry', 'silly', 'sleepy', 'star'];
-      const accessories = ['none', 'glasses', 'hat', 'crown'];
       const hats = ['none', 'tophat', 'crown', 'cap', 'wizard', 'cowboy', 'party', 'halo'];
       
-      customizerCharacter = {
+      window.customizerCharacter = {
         skinColor: colors[Math.floor(Math.random() * colors.length)],
         face: faces[Math.floor(Math.random() * faces.length)],
-        accessory: accessories[Math.floor(Math.random() * accessories.length)],
         hat: hats[Math.floor(Math.random() * hats.length)]
       };
       
-      drawCustomizerPreview();
-    }
+      window.drawCustomizerPreview();
+    };
     
-    function saveCharacter() {
-      localStorage.setItem('pixelioCharacter', JSON.stringify(customizerCharacter));
+    window.saveCharacter = function() {
+      localStorage.setItem('pixelioCharacter', JSON.stringify(window.customizerCharacter));
       alert('✅ Character saved! Your custom look will appear in-game!');
-    }
+      console.log('Saved character:', window.customizerCharacter);
+    };
     
-    function drawCustomizerPreview() {
+    window.drawCustomizerPreview = function() {
       const canvas = document.getElementById('customizer-preview');
-      if (!canvas) return;
+      if (!canvas) {
+        console.error('Canvas not found!');
+        return;
+      }
       
       const ctx = canvas.getContext('2d');
       
-      // Clear
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Clear with gradient background
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, '#87CEEB');
+      gradient.addColorStop(1, '#7FFF00');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Draw body
-      ctx.fillStyle = customizerCharacter.skinColor;
+      ctx.fillStyle = window.customizerCharacter.skinColor;
       ctx.fillRect(100, 180, 100, 150);
       
       // Draw head
-      ctx.fillStyle = customizerCharacter.skinColor;
+      ctx.fillStyle = window.customizerCharacter.skinColor;
       ctx.fillRect(110, 100, 80, 80);
       
       // Draw face
-      ctx.fillStyle = '#000';
-      ctx.font = '40px Arial';
+      ctx.font = '50px Arial';
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
       
       const faceEmojis = {
         happy: '😊',
@@ -5732,13 +5755,13 @@
         angry: '😠',
         silly: '🤪',
         sleepy: '😴',
-        star: '🤩'
+        star: '⭐'
       };
       
-      ctx.fillText(faceEmojis[customizerCharacter.face] || '😊', 150, 150);
+      ctx.fillText(faceEmojis[window.customizerCharacter.face] || '😊', 150, 140);
       
       // Draw hat
-      if (customizerCharacter.hat !== 'none') {
+      if (window.customizerCharacter.hat && window.customizerCharacter.hat !== 'none') {
         ctx.font = '50px Arial';
         const hatEmojis = {
           tophat: '🎩',
@@ -5749,29 +5772,21 @@
           party: '🎉',
           halo: '😇'
         };
-        ctx.fillText(hatEmojis[customizerCharacter.hat] || '', 150, 80);
-      }
-      
-      // Draw accessory
-      if (customizerCharacter.accessory !== 'none') {
-        ctx.font = '30px Arial';
-        const accessoryEmojis = {
-          glasses: '🕶️',
-          hat: '🎩',
-          crown: '👑'
-        };
-        ctx.fillText(accessoryEmojis[customizerCharacter.accessory] || '', 150, 140);
+        ctx.fillText(hatEmojis[window.customizerCharacter.hat] || '', 150, 70);
       }
       
       // Draw arms
-      ctx.fillStyle = customizerCharacter.skinColor;
+      ctx.fillStyle = window.customizerCharacter.skinColor;
       ctx.fillRect(70, 200, 30, 80);
       ctx.fillRect(200, 200, 30, 80);
       
       // Draw legs
       ctx.fillRect(110, 330, 35, 70);
       ctx.fillRect(155, 330, 35, 70);
-    }
+      
+      console.log('Drew preview for:', window.customizerCharacter);
+    };
+    
     
     
     
