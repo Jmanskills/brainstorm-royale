@@ -1909,11 +1909,10 @@
 
       <!-- Shop Tabs -->
       <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd;">
-        <button class="shop-tab active" onclick="switchShopTab('skins')" data-tab="skins">🎨 Skins</button>
-        <button class="shop-tab" onclick="switchShopTab('emotes')" data-tab="emotes">😊 Emotes</button>
-        <button class="shop-tab" onclick="switchShopTab('trails')" data-tab="trails">✨ Trails</button>
-        <button class="shop-tab" onclick="switchShopTab('weapon_skins')" data-tab="weapon_skins">🔫 Weapon Skins</button>
-        <button class="shop-tab" onclick="switchShopTab('bundles')" data-tab="bundles">📦 Bundles</button>
+        <button class="shop-tab active" onclick="switchShopTab('skins')" data-tab="skins">🧑 Skins</button>
+        <button class="shop-tab" onclick="switchShopTab('backbling')" data-tab="backbling">🎒 Back Bling</button>
+        <button class="shop-tab" onclick="switchShopTab('hats')" data-tab="hats">🎩 Hats</button>
+        <button class="shop-tab" onclick="switchShopTab('pets')" data-tab="pets">🐕 Pets</button>
       </div>
 
       <!-- Shop Content -->
@@ -3336,8 +3335,18 @@
     let currentShopTab = 'skins';
     
     async function openShop() {
+      // Initialize locker items if not already done
+      if (!window.availableSkins) {
+        console.error('Locker system not initialized!');
+        return;
+      }
+      
       document.getElementById('shop-modal').classList.add('active');
-      document.getElementById('shop-coins-display').textContent = currentUser.stats.coins;
+      
+      // Show coins (use 10000 for testing if no user)
+      const coins = currentUser?.stats?.coins || 10000;
+      document.getElementById('shop-coins-display').textContent = coins;
+      
       await loadShopItems('skins');
     }
     
@@ -3559,34 +3568,46 @@
       content.innerHTML = '<p style="text-align: center;">Loading...</p>';
       
       try {
+        // Load from locker system instead of API
         let items = [];
         
-        if (category === 'bundles') {
-          const res = await fetch('/api/shop/bundles', {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-          });
-          const data = await res.json();
-          content.innerHTML = renderBundles(data);
-          return;
-        } else {
-          // Load all items and filter by category
-          const res = await fetch('/api/shop/items', {
-            headers: { 'Authorization': `Bearer ${authToken}` }
-          });
-          const allItems = await res.json();
-          
-          // Map category names to item types
-          const typeMap = {
-            'skins': 'skin',
-            'emotes': 'emote',
-            'trails': 'trail',
-            'weapon_skins': 'weapon_skin'
-          };
-          
-          const itemType = typeMap[category];
-          items = allItems.filter(item => item.type === itemType);
-          
-          console.log(`Category: ${category}, Type: ${itemType}, Items found:`, items.length);
+        if (category === 'skins') {
+          items = Object.keys(window.availableSkins).map(id => ({
+            id,
+            name: window.availableSkins[id].name,
+            price: window.availableSkins[id].price || 0,
+            owned: window.availableSkins[id].owned,
+            rarity: window.availableSkins[id].rarity,
+            color: window.availableSkins[id].color,
+            type: 'skin'
+          })).filter(item => item.price > 0); // Don't show free default
+        } else if (category === 'backbling') {
+          items = Object.keys(window.availableBackBling).map(id => ({
+            id,
+            name: window.availableBackBling[id].name,
+            price: window.availableBackBling[id].price || 0,
+            owned: window.availableBackBling[id].owned,
+            emoji: window.availableBackBling[id].emoji,
+            type: 'backbling'
+          })).filter(item => item.price > 0);
+        } else if (category === 'hats') {
+          items = Object.keys(window.availableHats).map(id => ({
+            id,
+            name: window.availableHats[id].name,
+            price: window.availableHats[id].price || 0,
+            owned: window.availableHats[id].owned,
+            emoji: window.availableHats[id].emoji,
+            type: 'hat'
+          })).filter(item => item.price > 0);
+        } else if (category === 'pets') {
+          items = Object.keys(window.availablePets).map(id => ({
+            id,
+            name: window.availablePets[id].name,
+            price: window.availablePets[id].price || 0,
+            owned: window.availablePets[id].owned,
+            emoji: window.availablePets[id].emoji,
+            type: 'pet'
+          })).filter(item => item.price > 0);
         }
         
         content.innerHTML = renderShopItems(items, category);
@@ -3605,13 +3626,15 @@
         <div class="shop-grid">
           ${items.map(item => `
             <div class="shop-item ${item.owned ? 'owned' : ''}">
-              <div class="shop-item-icon">${getItemIcon(item.type, item)}</div>
+              <div class="shop-item-icon" style="font-size: 48px;">
+                ${item.type === 'skin' ? '🧑' : item.emoji || '❓'}
+              </div>
               <div class="shop-item-name">${item.name}</div>
-              <div class="shop-item-rarity rarity-${item.rarity || 'common'}">${(item.rarity || 'common').toUpperCase()}</div>
+              ${item.rarity ? `<div class="shop-item-rarity rarity-${item.rarity}">${item.rarity.toUpperCase()}</div>` : ''}
               <div class="shop-item-price">💰 ${item.price}</div>
               ${item.owned 
                 ? '<div class="shop-owned-badge">✅ Owned</div>'
-                : `<button class="shop-buy-btn" onclick="buyItem('${item.id}', '${item.type}', ${item.price})">Buy Now</button>`
+                : `<button class="shop-buy-btn" onclick="buyLockerItem('${item.id}', '${item.type}', ${item.price}, '${item.name}')">Buy Now</button>`
               }
             </div>
           `).join('')}
@@ -3711,6 +3734,64 @@
         alert('❌ Error purchasing item');
       }
     }
+    
+    // Buy locker items (skins, accessories)
+    window.buyLockerItem = async function(itemId, itemType, price, name) {
+      // Check coins (from currentUser or localStorage for testing)
+      let coins = currentUser?.stats?.coins || 10000; // Give 10000 for testing
+      
+      if (coins < price) {
+        alert(`❌ Not enough coins! You need ${price} but only have ${coins}.`);
+        return;
+      }
+      
+      if (!confirm(`Buy "${name}" for ${price} coins?`)) {
+        return;
+      }
+      
+      // Update owned status
+      if (itemType === 'skin') {
+        window.availableSkins[itemId].owned = true;
+      } else if (itemType === 'backbling') {
+        window.availableBackBling[itemId].owned = true;
+      } else if (itemType === 'hat') {
+        window.availableHats[itemId].owned = true;
+      } else if (itemType === 'pet') {
+        window.availablePets[itemId].owned = true;
+      }
+      
+      // Save to localStorage
+      const owned = {
+        skins: {},
+        backBling: {},
+        hats: {},
+        pets: {}
+      };
+      
+      Object.keys(window.availableSkins).forEach(k => owned.skins[k] = window.availableSkins[k].owned);
+      Object.keys(window.availableBackBling).forEach(k => owned.backBling[k] = window.availableBackBling[k].owned);
+      Object.keys(window.availableHats).forEach(k => owned.hats[k] = window.availableHats[k].owned);
+      Object.keys(window.availablePets).forEach(k => owned.pets[k] = window.availablePets[k].owned);
+      
+      localStorage.setItem('pixelioOwnedItems', JSON.stringify(owned));
+      
+      // Deduct coins (TODO: sync with server)
+      coins -= price;
+      if (currentUser?.stats) {
+        currentUser.stats.coins = coins;
+      }
+      
+      alert(`✅ Successfully purchased "${name}"! You now own it forever!`);
+      
+      // Refresh shop
+      await loadShopItems(currentShopTab);
+      
+      // Update coin displays
+      document.getElementById('shop-coins-display').textContent = coins;
+      if (document.getElementById('coins-header')) {
+        document.getElementById('coins-header').textContent = coins;
+      }
+    };
     
     async function buyBundle(bundleId, price) {
       if (currentUser.stats.coins < price) {
