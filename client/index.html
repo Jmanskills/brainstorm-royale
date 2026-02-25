@@ -3878,11 +3878,9 @@
           game3D.createBuildings(gameState.buildings, gameState.map.size);
           console.log('✅ Simple 3D Engine started!');
           
-          // Send inputs to server
+          // Send inputs to server every frame
           setInterval(() => {
-            if (game3D) {
-              game3D.sendInputs(socket);
-            }
+            sendInputs(); // Call the actual sendInputs function!
           }, 1000/60); // 60 FPS
           
         } catch (error) {
