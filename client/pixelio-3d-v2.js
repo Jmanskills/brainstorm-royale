@@ -210,8 +210,8 @@ class Pixelio3D {
     rightEye.position.set(1.5, 17, 3.5);
     group.add(rightEye);
     
-    // Arms - rounded capsules
-    const armGeometry = new THREE.CapsuleGeometry(1, 4, 8, 8);
+    // Arms - rounded cylinders
+    const armGeometry = new THREE.CylinderGeometry(1, 1, 4, 8);
     const armMaterial = new THREE.MeshStandardMaterial({ 
       color: skinColor,
       metalness: 0.1,
@@ -230,8 +230,8 @@ class Pixelio3D {
     rightArm.castShadow = true;
     group.add(rightArm);
     
-    // Legs - rounded capsules
-    const legGeometry = new THREE.CapsuleGeometry(1.5, 5, 8, 8);
+    // Legs - rounded cylinders
+    const legGeometry = new THREE.CylinderGeometry(1.5, 1.5, 5, 8);
     const legMaterial = new THREE.MeshStandardMaterial({ 
       color: skinColor,
       metalness: 0.1,
