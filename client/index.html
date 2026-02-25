@@ -4987,6 +4987,11 @@
         if (data.players) {
           players = data.players;
           myPlayer = players.find(p => p.id === socket.id);
+          
+          // DEBUG: Log player positions
+          if (myPlayer && Math.random() < 0.05) { // Log 5% of updates
+            console.log('📍 My position:', myPlayer.x, myPlayer.y);
+          }
         }
         
         // Update game state
@@ -5004,6 +5009,8 @@
         // UPDATE 3D ENGINE WITH NEW V2!
         if (game3D && data.players && gameState.map) {
           game3D.updatePlayers(data.players, gameState.map.size);
+        } else if (game3D && !gameState.map) {
+          console.warn('⚠️ No map in gameState yet!');
         }
       });
       

@@ -114,10 +114,16 @@ class Pixelio3D {
       if (!this.players.has(p.id)) {
         const mesh = this.createPlayer();
         this.players.set(p.id, { mesh, x: p.x, y: p.y });
-        console.log('✅ Player created:', p.username);
+        console.log('✅ Player created:', p.username, 'at', p.x, p.y);
       }
       
       const player = this.players.get(p.id);
+      
+      // DEBUG: Log position updates
+      if (p.id === this.myPlayerId && (player.x !== p.x || player.y !== p.y) && Math.random() < 0.1) {
+        console.log('🏃 Moving from', player.x, player.y, 'to', p.x, p.y);
+      }
+      
       player.x = p.x;
       player.y = p.y;
       player.mesh.position.x = p.x - mapSize / 2;
